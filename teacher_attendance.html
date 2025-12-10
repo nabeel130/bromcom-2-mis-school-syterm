@@ -108,7 +108,7 @@
             <button class="btn ghost">Send Message</button>
             <button class="btn ghost">Actions <i class="fas fa-caret-down" style="margin-left:8px"></i></button>
           </div>
-          <div class="small-muted">Columns: Student • Attendance (P/I/H/L) • Lates Count • Detention</div>
+          <div class="small-muted">Columns: Student • Attendance (P/A/I/H/L) • Lates Count • Detention</div>
         </div>
 
         <div id="rosterList">
@@ -126,6 +126,7 @@
     // Attendance codes map
     const attendanceMap = {
       'P': { label: 'P', name: 'Present', color: '#2ecc71', bg: 'rgba(46,204,113,0.12)' },
+      'A': { label: 'A', name: 'Absent', color: '#ff5252', bg: 'rgba(255,82,82,0.12)' },
       'I': { label: 'I', name: 'Illness', color: '#ff8a00', bg: 'rgba(255,138,0,0.12)' },
       'H': { label: 'H', name: 'Holiday', color: '#7b61ff', bg: 'rgba(123,97,255,0.12)' },
       'L': { label: 'L', name: 'Late', color: '#ff5252', bg: 'rgba(255,82,82,0.12)' }
@@ -158,7 +159,7 @@
       const attData = attendanceMap[s.attendance] || attendanceMap['P'];
       const attHtml = `<div style=\"display:flex;align-items:center;gap:10px\">`+
         `<div class=\"badge\" style=\"background:${attData.bg};color:${attData.color};\" id=\"att-${s.id}\">${attData.label} — ${attData.name}</div>`+
-        `<div style=\"display:flex;gap:6px\"><button class=\"btn ghost\" onclick=\"mark('${s.id}','P')\" title=\"Present\">P</button><button class=\"btn ghost\" onclick=\"mark('${s.id}','I')\" title=\"Illness\">I</button><button class=\"btn ghost\" onclick=\"mark('${s.id}','H')\" title=\"Holiday\">H</button><button class=\"btn ghost\" onclick=\"mark('${s.id}','L')\" title=\"Late\">L</button></div></div>`;
+        `<div style=\"display:flex;gap:6px\"><button class=\"btn ghost\" onclick=\"mark('${s.id}','P')\" title=\"Present\">P</button><button class=\"btn ghost\" onclick=\"mark('${s.id}','A')\" title=\"Absent\">A</button><button class=\"btn ghost\" onclick=\"mark('${s.id}','I')\" title=\"Illness\">I</button><button class=\"btn ghost\" onclick=\"mark('${s.id}','H')\" title=\"Holiday\">H</button><button class=\"btn ghost\" onclick=\"mark('${s.id}','L')\" title=\"Late\">L</button></div></div>`;
 
       // Lates count
       const latesHtml = `<div class=\"small-muted\">Lates: <strong id=\"lates-${s.id}\">${s.lates || 0}</strong></div>`;
