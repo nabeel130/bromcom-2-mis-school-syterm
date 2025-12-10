@@ -102,7 +102,17 @@
         <div class="announcement" style="margin-top:10px">
           <input id="announcerName" placeholder="Announcer name (optional)" style="padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:inherit" />
           <textarea id="announcementText" placeholder="Type announcement... (Ctrl+Enter to speak)"></textarea>
-          <div style="display:flex;gap:8px;align-items:center">
+
+          <!-- Recipient selector: All / Class / Individual -->
+          <div style="display:flex;gap:8px;align-items:center;margin-top:6px">
+            <label style="color:var(--muted);font-size:13px;margin-right:6px">To</label>
+            <select id="recipientSelect" style="padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit">
+              <!-- options populated by JS -->
+            </select>
+            <div id="rosterCount" style="color:var(--muted);font-size:13px;margin-left:6px"></div>
+          </div>
+
+          <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
             <input type="range" id="speechVolume" min="0" max="100" value="100" style="width:160px" />
             <label style="margin-left:6px;color:var(--muted)">Rate</label>
             <input type="range" id="speechRate" min="0.5" max="1.8" step="0.1" value="1" style="width:120px" />
@@ -279,9 +289,19 @@
     function speakAnnouncement(){
       const text = document.getElementById('announcementText').value.trim();
       const name = document.getElementById('announcerName').value.trim() || 'System';
+      const recipient = document.getElementById('recipientSelect') ? document.getElementById('recipientSelect').value : 'ALL';
       if(!text) return alert('Enter announcement text');
-      addToLog('announcement', name + ': ' + text);
-      const u = new SpeechSynthesisUtterance(text);
+
+      let prefix = '';
+      if(recipient === 'CLASS') prefix = 'Attention 5 Maple students. ';
+      else if(recipient !== 'ALL'){
+        const s = students.find(x=>x.id === recipient);
+        if(s) prefix = `Attention ${s.name}. `;
+      }
+
+      const fullText = prefix + text;
+      addToLog('announcement', `${name} -> ${recipient}: ${text}`);
+      const u = new SpeechSynthesisUtterance(fullText);
       u.rate = parseFloat(document.getElementById('speechRate').value || 1);
       u.volume = parseFloat(document.getElementById('speechVolume').value || 100)/100;
       speechSynthesis.cancel(); speechSynthesis.speak(u);
@@ -304,6 +324,28 @@
 
     // quick add default presets
     (function ensureDefaultPresets(){ const st = loadState(); if(!st.presets || st.presets.length===0){ st.presets=[{name:'Lockdown 15s',duration:15,volume:80},{name:'Fire 20s',duration:20,volume:90}]; saveState(st); } renderPresets(); })();
+
+    // Student roster (from attendance/behaviour registers)
+    const students = [
+      { id: 'S001', name: 'Abid' },{ id: 'S002', name: 'Rakeeb' },{ id: 'S003', name: 'Nadeem' },{ id: 'S004', name: 'Waqas' },
+      { id: 'S005', name: 'Rais' },{ id: 'S006', name: 'Arfan' },{ id: 'S007', name: 'Sebi' },{ id: 'S008', name: 'Rehan' },
+      { id: 'S009', name: 'Adeel' },{ id: 'S010', name: 'Haffis' },{ id: 'S011', name: 'Ambo' },{ id: 'S012', name: 'Sajad' },
+      { id: 'S013', name: 'Afraz' },{ id: 'S014', name: 'Syed' },{ id: 'S015', name: 'Ideeris' },{ id: 'S016', name: 'Fasil' },
+      { id: 'S017', name: 'Shazi' },{ id: 'S018', name: 'Nasir' },{ id: 'S019', name: 'Usman' },{ id: 'S020', name: 'Shaf' },
+      { id: 'S021', name: 'Tahir' },{ id: 'S022', name: 'Aqeel' }
+    ];
+
+    function populateRecipientSelect(){
+      const sel = document.getElementById('recipientSelect');
+      if(!sel) return;
+      sel.innerHTML = '';
+      const allOpt = document.createElement('option'); allOpt.value = 'ALL'; allOpt.textContent = 'All Students'; sel.appendChild(allOpt);
+      const classOpt = document.createElement('option'); classOpt.value = 'CLASS'; classOpt.textContent = 'Class: 5 Maple'; sel.appendChild(classOpt);
+      const sep = document.createElement('option'); sep.disabled = true; sep.textContent = '──────────'; sel.appendChild(sep);
+      students.forEach(s=>{ const o = document.createElement('option'); o.value = s.id; o.textContent = `${s.name} (${s.id})`; sel.appendChild(o); });
+      const rc = document.getElementById('rosterCount'); if(rc) rc.textContent = `${students.length} students`;
+    }
+    populateRecipientSelect();
 
     // Log controls
     document.getElementById('clearLogBtn').addEventListener('click', ()=>{ if(confirm('Clear PA log?')){ paLog.length=0; saveLog(paLog); renderLog(); } });
