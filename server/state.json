@@ -1,5 +1,29 @@
 {
   "attendance": {},
   "behavior": {},
+  "roster": [
+    { "id": "S001", "name": "Abid" },
+    { "id": "S002", "name": "Rakeeb" },
+    { "id": "S003", "name": "Nadeem" },
+    { "id": "S004", "name": "Waqas" },
+    { "id": "S005", "name": "Rais" },
+    { "id": "S006", "name": "Arfan" },
+    { "id": "S007", "name": "Sebi" },
+    { "id": "S008", "name": "Rehan" },
+    { "id": "S009", "name": "Adeel" },
+    { "id": "S010", "name": "Haffis" },
+    { "id": "S011", "name": "Ambo" },
+    { "id": "S012", "name": "Sajad" },
+    { "id": "S013", "name": "Afraz" },
+    { "id": "S014", "name": "Syed" },
+    { "id": "S015", "name": "Ideeris" },
+    { "id": "S016", "name": "Fasil" },
+    { "id": "S017", "name": "Shazi" },
+    { "id": "S018", "name": "Nasir" },
+    { "id": "S019", "name": "Usman" },
+    { "id": "S020", "name": "Shaf" },
+    { "id": "S021", "name": "Tahir" },
+    { "id": "S022", "name": "Aqeel" }
+  ],
   "lastReset": null
 }
