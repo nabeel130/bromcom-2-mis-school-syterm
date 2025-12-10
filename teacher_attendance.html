@@ -107,10 +107,16 @@
             <button class="btn ghost">Behaviour</button>
             <button class="btn ghost">Send Message</button>
             <button class="btn ghost" id="loadRosterBtn">Load Server Roster</button>
+            <button class="btn ghost" id="clearStateBtn">Clear Local State</button>
             <button class="btn ghost">Actions <i class="fas fa-caret-down" style="margin-left:8px"></i></button>
           </div>
           <div class="small-muted">Columns: Student • Attendance (P/A/I/H/L) • Lates Count • Detention</div>
         </div>
+
+          <div id="debugBar" style="margin:12px 0 0 0;padding:10px;border-radius:10px;background:rgba(0,0,0,0.03);font-size:13px;color:#112;display:flex;gap:12px;align-items:center">
+            <div id="debugMsg">Status: idle</div>
+            <div style="margin-left:auto;font-size:12px;color:var(--muted)">Local: <span id="localCount">0</span> | Server: <span id="serverCount">?</span></div>
+          </div>
 
         <div id="rosterList">
           <!-- rows inserted by JS -->
@@ -363,11 +369,30 @@
             students = roster.map(r=>({ id: r.id || r.ID || ('S' + Math.random().toString(36).slice(2,6).toUpperCase()), name: (r.name||r.Name||''), fsm:'No', pp:'No', attendance:'-', lates:0, detained:false }));
             buildRoster(students);
             saveState();
-            alert(`Loaded ${students.length} students from server roster.`);
+            debug(`Loaded ${students.length} students from server roster.`);
+            document.getElementById('localCount').textContent = students.length;
+            document.getElementById('serverCount').textContent = students.length;
           } else {
-            alert('No roster found on server.');
+            debug('No roster found on server.');
+            document.getElementById('serverCount').textContent = '0';
           }
         });
+      }
+
+      // Clear local stored attendance state (useful for troubleshooting)
+      const clearBtn = document.getElementById('clearStateBtn');
+      if(clearBtn){
+        clearBtn.addEventListener('click', ()=>{
+          localStorage.removeItem(STORAGE_KEY);
+          localStorage.removeItem(LAST_RESET_KEY);
+          debug('Cleared local attendance state. Reloading...');
+          setTimeout(()=>location.reload(), 250);
+        });
+      }
+
+      function debug(msg){
+        console.log('[ATTENDANCE DEBUG]', msg);
+        const el = document.getElementById('debugMsg'); if(el) el.textContent = 'Status: '+msg;
       }
     })();
   </script>
