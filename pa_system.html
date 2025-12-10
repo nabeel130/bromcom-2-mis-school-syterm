@@ -132,6 +132,11 @@
           <button class="btn btn-cancel" id="clearLogBtn">Clear Log</button>
           <button class="btn" id="downloadLogBtn" style="background:linear-gradient(90deg,#7b61ff,#6dd3ff);color:#04202a">Download</button>
         </div>
+        <hr style="opacity:0.04;margin:12px 0">
+        <div>
+          <strong>Roster</strong>
+          <div id="paRoster" style="margin-top:8px;color:var(--muted);font-size:13px;max-height:220px;overflow:auto"></div>
+        </div>
       </aside>
     </div>
   </div>
@@ -344,8 +349,20 @@
       const sep = document.createElement('option'); sep.disabled = true; sep.textContent = '──────────'; sel.appendChild(sep);
       students.forEach(s=>{ const o = document.createElement('option'); o.value = s.id; o.textContent = `${s.name} (${s.id})`; sel.appendChild(o); });
       const rc = document.getElementById('rosterCount'); if(rc) rc.textContent = `${students.length} students`;
+      renderRoster();
     }
-    populateRecipientSelect();
+
+    function renderRoster(){
+      const el = document.getElementById('paRoster');
+      if(!el) return;
+      el.innerHTML = students.map(s=>`<div style="padding:6px;border-bottom:1px solid rgba(255,255,255,0.02)"><strong style="color:#e6eef6">${s.name}</strong><div style="color:var(--muted);font-size:12px">${s.id}</div></div>`).join('');
+    }
+
+    document.addEventListener('DOMContentLoaded', ()=>{
+      populateRecipientSelect();
+      renderPresets();
+      renderLog();
+    });
 
     // Log controls
     document.getElementById('clearLogBtn').addEventListener('click', ()=>{ if(confirm('Clear PA log?')){ paLog.length=0; saveLog(paLog); renderLog(); } });
