@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MIS School — Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root{--bg:#071028;--card:#071827;--accent:#7b61ff;--muted:#9fb0c8}
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(180deg,#071028,#0b1a2a);font-family:Inter,Segoe UI,Arial;color:#e6f2ff}
+    .wrap{max-width:960px;margin:40px auto;padding:24px}
+    .hero{display:flex;align-items:center;gap:18px}
+    .logo{width:64px;height:64px;border-radius:12px;background:linear-gradient(90deg,#6dd3ff,#7b61ff);display:flex;align-items:center;justify-content:center;color:#04202a;font-weight:800}
+    h1{margin:0;font-size:22px}
+    .sub{color:var(--muted);margin-top:6px}
+
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:24px}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
+    .card h3{margin:0 0 8px 0}
+    .link{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;padding:10px;border-radius:8px}
+    .muted{color:var(--muted);font-size:13px}
+
+    footer{margin-top:28px;color:var(--muted);font-size:13px;text-align:center}
+    @media(max-width:760px){.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <div class="logo"><i class="fas fa-school"></i></div>
+      <div>
+        <h1>MIS School — Dashboard</h1>
+        <div class="sub">Quick access to Attendance, Behaviour, PA system and School Bell</div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <a class="card link" href="/teacher_attendance.html">
+        <div><i class="fas fa-check-circle" style="font-size:22px;color:#6dd3ff"></i></div>
+        <div>
+          <h3>Attendance Register</h3>
+          <div class="muted">Take and export registers, lates & detention</div>
+        </div>
+      </a>
+
+      <a class="card link" href="/behavior_register.html">
+        <div><i class="fas fa-exclamation-triangle" style="font-size:22px;color:#ffb86b"></i></div>
+        <div>
+          <h3>Behaviour Register</h3>
+          <div class="muted">5‑code behaviour tracking with detention logic</div>
+        </div>
+      </a>
+
+      <a class="card link" href="/pa_system.html">
+        <div><i class="fas fa-bullhorn" style="font-size:22px;color:#7b61ff"></i></div>
+        <div>
+          <h3>PA System</h3>
+          <div class="muted">Modern PA with sirens, TTS, presets and roster</div>
+        </div>
+      </a>
+
+      <a class="card link" href="/school_bell.html">
+        <div><i class="fas fa-bell" style="font-size:22px;color:#ffd166"></i></div>
+        <div>
+          <h3>School Bell</h3>
+          <div class="muted">Bell schedules and manual ring</div>
+        </div>
+      </a>
+    </div>
+
+    <footer>Hosted locally — open <code>http://localhost:4000</code> to view</footer>
+  </div>
+</body>
+</html>

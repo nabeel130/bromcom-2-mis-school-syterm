@@ -32,6 +32,13 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json({ limit: '2mb' }));
 
+// Serve client static files from project root so visiting / shows the UI
+const STATIC_DIR = path.join(__dirname, '..');
+app.use(express.static(STATIC_DIR));
+app.get('/', (req, res) => {
+  return res.sendFile(path.join(STATIC_DIR, 'index.html'));
+});
+
 // GET state for a key (attendance|behavior)
 app.get('/api/state/:type', (req, res) => {
   const type = req.params.type;
