@@ -3,241 +3,321 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>PA System — MIS School</title>
+  <title>PA System — MIS School (Modern)</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
     :root{
-      --primary:#3f51b5;
-      --danger:#d32f2f;
-      --warning:#ff9800;
-      --success:#4caf50;
-      --bg:#f5f7fa;
-      --card:#fff;
-      --muted:#757575;
+      --bg-1: #0f1724; --bg-2:#071020; --glass: rgba(255,255,255,0.06);
+      --accent: linear-gradient(135deg,#6dd3ff 0%,#7b61ff 100%);
+      --danger: #ff3b30; --safe:#00c853; --muted:#9aa4b2; --card:#0b1220;
+      --glass-2: rgba(255,255,255,0.03);
     }
     *{box-sizing:border-box}
-    body{margin:0;font-family:'Segoe UI', Arial, sans-serif;background:var(--bg);color:#333}
+    html,body{height:100%;margin:0;font-family:Inter,Segoe UI,Roboto,system-ui;background:radial-gradient(1200px 600px at 10% 10%, rgba(123,97,255,0.08), transparent), linear-gradient(180deg,var(--bg-1),var(--bg-2));color:#e6eef6}
+    .wrap{max-width:1100px;margin:28px auto;padding:18px}
+    .header{display:flex;align-items:center;gap:16px}
+    .logo{width:64px;height:64px;border-radius:12px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#04202a;font-weight:800;font-size:20px;box-shadow:0 6px 30px rgba(123,97,255,0.18)}
+    h1{margin:0;font-size:20px}
+    .sub{color:var(--muted);font-size:13px}
 
-    .container{max-width:1000px;margin:0 auto;padding:20px}
-    h1{color:var(--primary);text-align:center;margin-bottom:30px}
+    .main-grid{display:grid;grid-template-columns:1fr 380px;gap:20px;margin-top:18px}
+    .card{background:linear-gradient(180deg,var(--glass-2),rgba(255,255,255,0.01));border-radius:14px;padding:18px;box-shadow:0 8px 40px rgba(2,6,23,0.6);border:1px solid rgba(255,255,255,0.03)}
 
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:30px}
+    .controls{display:flex;flex-direction:column;gap:12px}
+    .row{display:flex;gap:12px}
+    .btn{padding:12px 14px;border-radius:10px;border:0;cursor:pointer;font-weight:700;display:inline-flex;align-items:center;gap:10px}
+    .btn-emer{background:linear-gradient(90deg,var(--danger),#ff6b6b);color:white;flex:1}
+    .btn-fire{background:linear-gradient(90deg,#ff8c42,#ff3b30);color:white;flex:1}
+    .btn-cancel{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
 
-    .card{background:var(--card);padding:24px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.08)}
+    .settings{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+    label{font-size:13px;color:var(--muted)}
+    input[type=range]{width:100%}
+    input[type=number]{width:100px;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
 
-    .card h2{margin-top:0;color:var(--primary);font-size:18px;display:flex;align-items:center;gap:10px}
-    .card p{color:var(--muted);font-size:14px;margin:12px 0}
+    .announcement{display:flex;flex-direction:column;gap:8px}
+    .announcement textarea{min-height:100px;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
 
-    .btn{display:inline-flex;align-items:center;gap:8px;padding:12px 20px;border:0;border-radius:8px;cursor:pointer;font-weight:600;transition:all 0.2s}
-    .btn.alarm{background:var(--danger);color:white;font-size:16px;width:100%;justify-content:center}
-    .btn.alarm:hover{background:#b71c1c;box-shadow:0 6px 20px rgba(211,47,47,0.3)}
-    .btn.alarm:active{transform:scale(0.98)}
+    .log-list{max-height:420px;overflow:auto;font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:8px}
+    .log-item{padding:10px;border-radius:8px;background:linear-gradient(180deg,rgba(255,255,255,0.01),transparent);border:1px solid rgba(255,255,255,0.02)}
 
-    .btn.info{background:var(--primary);color:white}
-    .btn.info:hover{background:#283593}
+    /* big overlay for active alarm */
+    .overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:1000}
+    .overlay.active{display:flex}
+    .overlay .panel{width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;background:linear-gradient(45deg,rgba(255,59,48,0.08),rgba(123,97,255,0.02));backdrop-filter:blur(6px)}
+    .flash{width:110px;height:110px;border-radius:999px;background:radial-gradient(circle at 30% 30%, rgba(255,255,255,0.12), transparent);box-shadow:0 6px 40px rgba(255,59,48,0.12);animation: pulse 1s infinite}
+    @keyframes pulse{0%{transform:scale(1);opacity:1}50%{transform:scale(1.08);opacity:0.85}100%{transform:scale(1);opacity:1}}
 
-    .btn.success{background:var(--success);color:white}
-    .btn.success:hover{background:#388e3c}
+    .presets{display:flex;gap:8px;flex-wrap:wrap}
+    .preset{padding:8px 10px;border-radius:8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.02);cursor:pointer}
 
-    .announcement-form{display:flex;flex-direction:column;gap:12px}
-    .announcement-form textarea{padding:12px;border:1px solid #ddd;border-radius:8px;font-family:inherit;resize:vertical;min-height:100px;font-size:14px}
-    .announcement-form input{padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px}
-
-    .control-buttons{display:flex;gap:12px;flex-wrap:wrap}
-
-    .status-box{background:#f0f4ff;padding:12px;border-radius:8px;border-left:4px solid var(--primary);color:var(--muted);font-size:13px;margin-top:12px}
-    .status-box.active{background:#e8f5e9;border-left-color:var(--success)}
-    .status-box.alarm{background:#ffebee;border-left-color:var(--danger)}
-
-    .settings{background:#f9f9f9;padding:16px;border-radius:8px;margin-top:12px}
-    .settings label{display:block;margin-bottom:8px;color:#333;font-weight:600;font-size:13px}
-    .settings input[type="range"]{width:100%;margin:8px 0}
-    .settings input[type="text"]{padding:8px 10px;border:1px solid #ddd;border-radius:6px;width:100%;margin-bottom:8px}
-
-    @media (max-width:768px){
-      .grid{grid-template-columns:1fr}
-    }
+    @media(max-width:980px){.main-grid{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1><i class="fas fa-bullhorn"></i> School PA System</h1>
-
-    <div class="grid">
-      <!-- Lockdown / Fire Alarm -->
-      <div class="card">
-        <h2><i class="fas fa-exclamation-triangle"></i> Emergency Alerts</h2>
-        <p>Trigger immediate lockdown or fire alarm. Plays loud continuous blast.</p>
-
-        <div class="control-buttons">
-          <button class="btn alarm" id="lockdownBtn" onclick="triggerLockdown()">
-            <i class="fas fa-lock"></i> LOCKDOWN ALERT
-          </button>
-          <button class="btn alarm" id="fireBtn" onclick="triggerFireAlarm()" style="background:#ff5722">
-            <i class="fas fa-fire"></i> FIRE ALARM
-          </button>
-        </div>
-
-        <div id="emergencyStatus" class="status-box"></div>
-
-        <div class="settings">
-          <label>Alarm Volume</label>
-          <input type="range" id="alarmVolume" min="0" max="100" value="80" />
-          <label>Duration (seconds)</label>
-          <input type="number" id="alarmDuration" min="5" max="60" value="15" />
-        </div>
-      </div>
-
-      <!-- General Announcements -->
-      <div class="card">
-        <h2><i class="fas fa-microphone"></i> General Announcements</h2>
-        <p>Broadcast a message. Text will be read aloud using text-to-speech.</p>
-
-        <div class="announcement-form">
-          <input type="text" id="announcerName" placeholder="Your name (optional)" />
-          <textarea id="announcementText" placeholder="Enter announcement message..."></textarea>
-          <button class="btn success" onclick="submitAnnouncement()">
-            <i class="fas fa-paper-plane"></i> Broadcast Announcement
-          </button>
-        </div>
-
-        <div id="announcementStatus" class="status-box"></div>
-
-        <div class="settings">
-          <label>Speech Volume</label>
-          <input type="range" id="speechVolume" min="0" max="100" value="100" />
-          <label>Speech Rate</label>
-          <input type="range" id="speechRate" min="0.5" max="2" step="0.1" value="1" />
-        </div>
+  <div class="wrap">
+    <div class="header">
+      <div class="logo"><i class="fas fa-bullhorn"></i></div>
+      <div>
+        <h1>Modern PA System</h1>
+        <div class="sub">Emergency alerts, announcements, presets and persistent log</div>
       </div>
     </div>
 
-    <!-- History / Log -->
-    <div class="card">
-      <h2><i class="fas fa-history"></i> PA Log</h2>
-      <div id="paLog" style="max-height:300px;overflow-y:auto;font-size:13px;color:var(--muted)">
-        <div style="text-align:center;padding:20px;color:#ccc">No announcements yet</div>
-      </div>
+    <div class="main-grid">
+      <section class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <strong>Emergency Controls</strong>
+            <div class="sub">Two-step confirm + smooth siren synthesis</div>
+          </div>
+          <div class="presets" id="presetContainer"></div>
+        </div>
+
+        <div class="controls" style="margin-top:12px">
+          <div class="row">
+            <button class="btn btn-emer" id="lockdownBtn"><i class="fas fa-lock"></i> LOCKDOWN</button>
+            <button class="btn btn-fire" id="fireBtn"><i class="fas fa-fire"></i> FIRE</button>
+          </div>
+
+          <div style="display:flex;gap:8px;align-items:center">
+            <button class="btn btn-cancel" id="allClearBtn"><i class="fas fa-check-circle"></i> ALL CLEAR</button>
+            <button class="btn btn-cancel" id="abortBtn"><i class="fas fa-ban"></i> ABORT</button>
+          </div>
+
+          <div class="settings">
+            <label>Volume</label>
+            <input type="range" id="masterVolume" min="0" max="100" value="80" />
+            <label>Duration (sec)</label>
+            <input type="number" id="alarmDuration" min="3" max="300" value="15" />
+          </div>
+        </div>
+
+        <hr style="opacity:0.04;margin:16px 0">
+
+        <div>
+          <strong>Announcements</strong>
+          <div class="sub">Text-to-speech announcements with volume & rate</div>
+        </div>
+        <div class="announcement" style="margin-top:10px">
+          <input id="announcerName" placeholder="Announcer name (optional)" style="padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:inherit" />
+          <textarea id="announcementText" placeholder="Type announcement... (Ctrl+Enter to speak)"></textarea>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="range" id="speechVolume" min="0" max="100" value="100" style="width:160px" />
+            <label style="margin-left:6px;color:var(--muted)">Rate</label>
+            <input type="range" id="speechRate" min="0.5" max="1.8" step="0.1" value="1" style="width:120px" />
+            <button class="btn" id="speakBtn" style="margin-left:auto;background:linear-gradient(90deg,#6dd3ff,#7b61ff);color:#04202a"><i class="fas fa-play"></i> Speak</button>
+          </div>
+        </div>
+
+      </section>
+
+      <aside class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <strong>PA Log</strong>
+          <div class="sub">Persistent last 200 entries</div>
+        </div>
+        <div id="paLog" class="log-list"></div>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button class="btn btn-cancel" id="clearLogBtn">Clear Log</button>
+          <button class="btn" id="downloadLogBtn" style="background:linear-gradient(90deg,#7b61ff,#6dd3ff);color:#04202a">Download</button>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div class="overlay" id="overlay">
+    <div class="panel">
+      <div class="flash"></div>
+      <h2 id="overlayTitle">ALERT</h2>
+      <div id="overlayMessage" class="sub">Siren active</div>
+      <button class="btn" id="overlayAbort" style="background:rgba(255,255,255,0.06);color:inherit">Abort</button>
     </div>
   </div>
 
   <script>
-    // Audio context for alarm synthesis
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    const paLog = [];
+    // Modern PA system script
+    const STATE_KEY = 'pa_system_state_v1';
+    const LOG_KEY = 'pa_system_log_v1';
+    const MAX_LOG = 200;
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const masterGain = audioCtx.createGain();
+    masterGain.gain.value = 0.8;
+    const compressor = audioCtx.createDynamicsCompressor();
+    compressor.threshold.value = -12;
+    compressor.knee.value = 20;
+    compressor.ratio.value = 6;
+    compressor.attack.value = 0.02;
+    compressor.release.value = 0.3;
+    masterGain.connect(compressor).connect(audioCtx.destination);
+
+    let alarmNodes = [];
+    let overlayTimer = null;
+
+    // Persistence: presets + log
+    function loadState(){
+      try{ const raw = localStorage.getItem(STATE_KEY); return raw ? JSON.parse(raw) : { presets: [] }; }catch(e){return { presets: [] }}
+    }
+    function saveState(state){ localStorage.setItem(STATE_KEY, JSON.stringify(state)); }
+
+    function loadLog(){ try{ const raw = localStorage.getItem(LOG_KEY); return raw ? JSON.parse(raw) : []; }catch(e){return []} }
+    function saveLog(log){ localStorage.setItem(LOG_KEY, JSON.stringify(log.slice(0,MAX_LOG))); }
+
+    // Log helpers
+    const paLog = loadLog();
+    const paLogEl = document.getElementById('paLog');
 
     function addToLog(type, message){
-      const now = new Date().toLocaleTimeString();
-      paLog.unshift({ time: now, type, message });
-      if(paLog.length > 20) paLog.pop();
-      updateLogUI();
+      const now = new Date().toISOString();
+      paLog.unshift({t: now, type, message});
+      while(paLog.length > MAX_LOG) paLog.pop();
+      saveLog(paLog);
+      renderLog();
     }
 
-    function updateLogUI(){
-      const logDiv = document.getElementById('paLog');
-      if(paLog.length === 0){
-        logDiv.innerHTML = '<div style="text-align:center;padding:20px;color:#ccc">No announcements yet</div>';
-        return;
-      }
-      logDiv.innerHTML = paLog.map(item=>`
-        <div style="padding:8px;border-bottom:1px solid #eee;${item.type==='alarm'?'background:#ffebee':''}">
-          <strong>${item.time}</strong> [${item.type.toUpperCase()}] ${item.message}
-        </div>
-      `).join('');
+    function renderLog(){
+      if(!paLog.length){ paLogEl.innerHTML = '<div style="text-align:center;color:var(--muted)">No entries</div>'; return; }
+      paLogEl.innerHTML = paLog.map(it=>`<div class="log-item"><div style="font-weight:700">${new Date(it.t).toLocaleString()}</div><div style="color:var(--muted);margin-top:6px">[${it.type.toUpperCase()}] ${it.message}</div></div>`).join('');
     }
 
-    // Generate siren sound (alternating frequency)
-    function generateAlarmTone(durationSec, frequency1=800, frequency2=1200){
-      const duration = durationSec;
-      const sampleRate = audioContext.sampleRate;
-      const buffer = audioContext.createBuffer(1, duration * sampleRate, sampleRate);
-      const data = buffer.getChannelData(0);
-      const volume = document.getElementById('alarmVolume').value / 100;
-      const toggle = 0.2; // switch frequency every 200ms
+    renderLog();
 
-      for(let i=0; i < duration * sampleRate; i++){
-        const t = i / sampleRate;
-        const freq = (Math.floor(t / toggle) % 2 === 0) ? frequency1 : frequency2;
-        data[i] = Math.sin(2 * Math.PI * freq * t) * volume;
-      }
-      return buffer;
+    // Siren: two oscillators modulated by LFO for a smoother, modern sound
+    function startSiren(type='lockdown', duration=15){
+      stopSiren();
+      const now = audioCtx.currentTime;
+      const oscA = audioCtx.createOscillator();
+      const oscB = audioCtx.createOscillator();
+      oscA.type = 'sawtooth'; oscB.type = 'sine';
+      oscA.frequency.value = (type==='fire')? 900 : 600;
+      oscB.frequency.value = (type==='fire')? 1300 : 900;
+
+      const lfo = audioCtx.createOscillator();
+      lfo.type = 'sine'; lfo.frequency.value = 0.6;
+      const lfoGain = audioCtx.createGain(); lfoGain.gain.value = 300;
+      lfo.connect(lfoGain);
+      lfoGain.connect(oscA.frequency);
+      lfoGain.connect(oscB.frequency);
+
+      const gainNode = audioCtx.createGain();
+      gainNode.gain.value = 0;
+      oscA.connect(gainNode); oscB.connect(gainNode);
+      gainNode.connect(masterGain);
+
+      // Envelope (fade-in & out)
+      gainNode.gain.cancelScheduledValues(now);
+      gainNode.gain.setValueAtTime(0.0001, now);
+      gainNode.gain.exponentialRampToValueAtTime(1.0, now + 0.5);
+      gainNode.gain.setTargetAtTime(0.0001, now + duration - 0.6, 0.2);
+
+      oscA.start(now); oscB.start(now); lfo.start(now);
+
+      alarmNodes = [oscA, oscB, lfo, gainNode];
+
+      // auto-stop
+      overlayTimer = setTimeout(()=>{ stopSiren(); }, duration*1000);
+      showOverlay(type + ' ALERT', 'Siren active — auto-stop in '+duration+'s');
+      addToLog('alarm', type.toUpperCase() + ' triggered for ' + duration + 's');
     }
 
-    function playAlarmSound(durationSec, freq1, freq2){
+    function stopSiren(){
+      if(overlayTimer){ clearTimeout(overlayTimer); overlayTimer = null; }
+      if(!alarmNodes || alarmNodes.length===0) return;
+      const now = audioCtx.currentTime;
+      const [oscA, oscB, lfo, gainNode] = alarmNodes;
       try{
-        const buffer = generateAlarmTone(durationSec, freq1, freq2);
-        const source = audioContext.createBufferSource();
-        source.buffer = buffer;
-        const gainNode = audioContext.createGain();
-        gainNode.connect(audioContext.destination);
-        source.connect(gainNode);
-        source.start(0);
-        source.stop(audioContext.currentTime + durationSec);
-      }catch(e){
-        console.error('Audio playback error', e);
-      }
+        gainNode.gain.cancelScheduledValues(now);
+        gainNode.gain.setTargetAtTime(0.0001, now, 0.2);
+        setTimeout(()=>{
+          try{ oscA.stop(); oscB.stop(); lfo.stop(); }catch(e){}
+        }, 500);
+      }catch(e){}
+      alarmNodes = [];
+      hideOverlay();
+      addToLog('alarm', 'Alarm stopped');
     }
 
-    function triggerLockdown(){
-      const duration = parseInt(document.getElementById('alarmDuration').value);
-      playAlarmSound(duration, 600, 900);
-      document.getElementById('emergencyStatus').innerHTML = '<strong style="color:var(--danger)">🔴 LOCKDOWN ALERT ACTIVE</strong> — Siren playing for '+duration+'s';
-      document.getElementById('emergencyStatus').classList.add('alarm');
-      addToLog('alarm', 'LOCKDOWN ALERT triggered');
-      setTimeout(()=>{
-        document.getElementById('emergencyStatus').innerHTML = '';
-        document.getElementById('emergencyStatus').classList.remove('alarm');
-      }, duration * 1000 + 500);
+    function showOverlay(title, msg){
+      const o = document.getElementById('overlay');
+      document.getElementById('overlayTitle').textContent = title;
+      document.getElementById('overlayMessage').textContent = msg;
+      o.classList.add('active');
+    }
+    function hideOverlay(){ document.getElementById('overlay').classList.remove('active'); }
+
+    // Confirmation modal pattern: press then confirm
+    async function confirmThen(action){
+      // simple confirm prompt (can be replaced with hold-to-confirm)
+      const ok = confirm('Confirm action: this will trigger the PA. Continue?');
+      if(!ok) return false;
+      await ensureAudioContext();
+      action();
+      return true;
     }
 
-    function triggerFireAlarm(){
-      const duration = parseInt(document.getElementById('alarmDuration').value);
-      playAlarmSound(duration, 1000, 1500);
-      document.getElementById('emergencyStatus').innerHTML = '<strong style="color:#ff5722">🔥 FIRE ALARM ACTIVE</strong> — Siren playing for '+duration+'s';
-      document.getElementById('emergencyStatus').classList.add('alarm');
-      addToLog('alarm', 'FIRE ALARM triggered');
-      setTimeout(()=>{
-        document.getElementById('emergencyStatus').innerHTML = '';
-        document.getElementById('emergencyStatus').classList.remove('alarm');
-      }, duration * 1000 + 500);
-    }
+    // Ensure audio context resumed by user gesture
+    async function ensureAudioContext(){ if(audioCtx.state !== 'running'){ await audioCtx.resume(); } }
 
-    function submitAnnouncement(){
+    // Wire up UI
+    document.getElementById('lockdownBtn').addEventListener('click', ()=>{
+      const dur = parseInt(document.getElementById('alarmDuration').value) || 15;
+      confirmThen(()=> startSiren('lockdown', dur));
+    });
+    document.getElementById('fireBtn').addEventListener('click', ()=>{
+      const dur = parseInt(document.getElementById('alarmDuration').value) || 15;
+      confirmThen(()=> startSiren('fire', dur));
+    });
+    document.getElementById('allClearBtn').addEventListener('click', ()=>{ stopSiren(); addToLog('info','All Clear issued'); });
+    document.getElementById('abortBtn').addEventListener('click', ()=>{ stopSiren(); addToLog('info','Abort issued'); });
+
+    document.getElementById('overlayAbort').addEventListener('click', ()=>{ stopSiren(); addToLog('info','Abort (overlay)'); });
+
+    document.getElementById('speakBtn').addEventListener('click', ()=>{ speakAnnouncement(); });
+    document.getElementById('announcementText').addEventListener('keydown', (e)=>{ if(e.ctrlKey && e.key === 'Enter') speakAnnouncement(); });
+
+    function speakAnnouncement(){
       const text = document.getElementById('announcementText').value.trim();
       const name = document.getElementById('announcerName').value.trim() || 'System';
-      if(!text){
-        alert('Please enter an announcement.');
-        return;
-      }
-
-      // Text-to-speech
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = parseFloat(document.getElementById('speechRate').value);
-      utterance.volume = parseFloat(document.getElementById('speechVolume').value) / 100;
-      speechSynthesis.cancel(); // stop any ongoing speech
-      speechSynthesis.speak(utterance);
-
-      document.getElementById('announcementStatus').innerHTML = '<strong style="color:var(--success)">✓ Broadcasting announcement...</strong>';
-      document.getElementById('announcementStatus').classList.add('active');
-
+      if(!text) return alert('Enter announcement text');
       addToLog('announcement', name + ': ' + text);
-
-      utterance.onend = ()=>{
-        document.getElementById('announcementStatus').innerHTML = '<strong style="color:var(--success)">✓ Announcement complete</strong>';
-        setTimeout(()=>{
-          document.getElementById('announcementStatus').innerHTML = '';
-          document.getElementById('announcementStatus').classList.remove('active');
-        }, 2000);
-      };
-
-      // Clear form
+      const u = new SpeechSynthesisUtterance(text);
+      u.rate = parseFloat(document.getElementById('speechRate').value || 1);
+      u.volume = parseFloat(document.getElementById('speechVolume').value || 100)/100;
+      speechSynthesis.cancel(); speechSynthesis.speak(u);
       document.getElementById('announcementText').value = '';
     }
 
-    // Allow Enter key to submit announcement
-    document.getElementById('announcementText').addEventListener('keydown', (e)=>{
-      if(e.ctrlKey && e.key === 'Enter'){ submitAnnouncement(); }
+    // Volume control -> masterGain
+    document.getElementById('masterVolume').addEventListener('input', (e)=>{ const v = parseFloat(e.target.value)/100; masterGain.gain.value = v; });
+
+    // Presets (simple): allow quick-load presets in localStorage
+    function renderPresets(){
+      const st = loadState();
+      const container = document.getElementById('presetContainer'); container.innerHTML = '';
+      (st.presets||[]).forEach(p=>{
+        const b = document.createElement('div'); b.className='preset'; b.textContent = p.name; b.title = p.name;
+        b.addEventListener('click', ()=>{ document.getElementById('alarmDuration').value = p.duration; document.getElementById('masterVolume').value = p.volume; masterGain.gain.value = p.volume/100; addToLog('info','Preset '+p.name+' loaded'); });
+        container.appendChild(b);
+      });
+    }
+
+    // quick add default presets
+    (function ensureDefaultPresets(){ const st = loadState(); if(!st.presets || st.presets.length===0){ st.presets=[{name:'Lockdown 15s',duration:15,volume:80},{name:'Fire 20s',duration:20,volume:90}]; saveState(st); } renderPresets(); })();
+
+    // Log controls
+    document.getElementById('clearLogBtn').addEventListener('click', ()=>{ if(confirm('Clear PA log?')){ paLog.length=0; saveLog(paLog); renderLog(); } });
+    document.getElementById('downloadLogBtn').addEventListener('click', ()=>{ const blob=new Blob([JSON.stringify(paLog, null, 2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='pa_log.json'; a.click(); });
+
+    // Keyboard shortcuts: L = lockdown, F = fire, S = stop
+    window.addEventListener('keydown', (e)=>{
+      if(e.key==='L' || e.key==='l'){ confirmThen(()=> startSiren('lockdown', parseInt(document.getElementById('alarmDuration').value)||15)); }
+      if(e.key==='F' || e.key==='f'){ confirmThen(()=> startSiren('fire', parseInt(document.getElementById('alarmDuration').value)||15)); }
+      if(e.key==='S' || e.key==='s'){ stopSiren(); }
     });
+
+    // ensure audio unlocked on first gesture
+    window.addEventListener('click', ()=>{ if(audioCtx.state !== 'running') audioCtx.resume(); }, {once:true});
   </script>
 </body>
 </html>
