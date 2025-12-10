@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PA System — MIS School</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root{
+      --primary:#3f51b5;
+      --danger:#d32f2f;
+      --warning:#ff9800;
+      --success:#4caf50;
+      --bg:#f5f7fa;
+      --card:#fff;
+      --muted:#757575;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:'Segoe UI', Arial, sans-serif;background:var(--bg);color:#333}
+
+    .container{max-width:1000px;margin:0 auto;padding:20px}
+    h1{color:var(--primary);text-align:center;margin-bottom:30px}
+
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:30px}
+
+    .card{background:var(--card);padding:24px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.08)}
+
+    .card h2{margin-top:0;color:var(--primary);font-size:18px;display:flex;align-items:center;gap:10px}
+    .card p{color:var(--muted);font-size:14px;margin:12px 0}
+
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:12px 20px;border:0;border-radius:8px;cursor:pointer;font-weight:600;transition:all 0.2s}
+    .btn.alarm{background:var(--danger);color:white;font-size:16px;width:100%;justify-content:center}
+    .btn.alarm:hover{background:#b71c1c;box-shadow:0 6px 20px rgba(211,47,47,0.3)}
+    .btn.alarm:active{transform:scale(0.98)}
+
+    .btn.info{background:var(--primary);color:white}
+    .btn.info:hover{background:#283593}
+
+    .btn.success{background:var(--success);color:white}
+    .btn.success:hover{background:#388e3c}
+
+    .announcement-form{display:flex;flex-direction:column;gap:12px}
+    .announcement-form textarea{padding:12px;border:1px solid #ddd;border-radius:8px;font-family:inherit;resize:vertical;min-height:100px;font-size:14px}
+    .announcement-form input{padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px}
+
+    .control-buttons{display:flex;gap:12px;flex-wrap:wrap}
+
+    .status-box{background:#f0f4ff;padding:12px;border-radius:8px;border-left:4px solid var(--primary);color:var(--muted);font-size:13px;margin-top:12px}
+    .status-box.active{background:#e8f5e9;border-left-color:var(--success)}
+    .status-box.alarm{background:#ffebee;border-left-color:var(--danger)}
+
+    .settings{background:#f9f9f9;padding:16px;border-radius:8px;margin-top:12px}
+    .settings label{display:block;margin-bottom:8px;color:#333;font-weight:600;font-size:13px}
+    .settings input[type="range"]{width:100%;margin:8px 0}
+    .settings input[type="text"]{padding:8px 10px;border:1px solid #ddd;border-radius:6px;width:100%;margin-bottom:8px}
+
+    @media (max-width:768px){
+      .grid{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1><i class="fas fa-bullhorn"></i> School PA System</h1>
+
+    <div class="grid">
+      <!-- Lockdown / Fire Alarm -->
+      <div class="card">
+        <h2><i class="fas fa-exclamation-triangle"></i> Emergency Alerts</h2>
+        <p>Trigger immediate lockdown or fire alarm. Plays loud continuous blast.</p>
+
+        <div class="control-buttons">
+          <button class="btn alarm" id="lockdownBtn" onclick="triggerLockdown()">
+            <i class="fas fa-lock"></i> LOCKDOWN ALERT
+          </button>
+          <button class="btn alarm" id="fireBtn" onclick="triggerFireAlarm()" style="background:#ff5722">
+            <i class="fas fa-fire"></i> FIRE ALARM
+          </button>
+        </div>
+
+        <div id="emergencyStatus" class="status-box"></div>
+
+        <div class="settings">
+          <label>Alarm Volume</label>
+          <input type="range" id="alarmVolume" min="0" max="100" value="80" />
+          <label>Duration (seconds)</label>
+          <input type="number" id="alarmDuration" min="5" max="60" value="15" />
+        </div>
+      </div>
+
+      <!-- General Announcements -->
+      <div class="card">
+        <h2><i class="fas fa-microphone"></i> General Announcements</h2>
+        <p>Broadcast a message. Text will be read aloud using text-to-speech.</p>
+
+        <div class="announcement-form">
+          <input type="text" id="announcerName" placeholder="Your name (optional)" />
+          <textarea id="announcementText" placeholder="Enter announcement message..."></textarea>
+          <button class="btn success" onclick="submitAnnouncement()">
+            <i class="fas fa-paper-plane"></i> Broadcast Announcement
+          </button>
+        </div>
+
+        <div id="announcementStatus" class="status-box"></div>
+
+        <div class="settings">
+          <label>Speech Volume</label>
+          <input type="range" id="speechVolume" min="0" max="100" value="100" />
+          <label>Speech Rate</label>
+          <input type="range" id="speechRate" min="0.5" max="2" step="0.1" value="1" />
+        </div>
+      </div>
+    </div>
+
+    <!-- History / Log -->
+    <div class="card">
+      <h2><i class="fas fa-history"></i> PA Log</h2>
+      <div id="paLog" style="max-height:300px;overflow-y:auto;font-size:13px;color:var(--muted)">
+        <div style="text-align:center;padding:20px;color:#ccc">No announcements yet</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Audio context for alarm synthesis
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const paLog = [];
+
+    function addToLog(type, message){
+      const now = new Date().toLocaleTimeString();
+      paLog.unshift({ time: now, type, message });
+      if(paLog.length > 20) paLog.pop();
+      updateLogUI();
+    }
+
+    function updateLogUI(){
+      const logDiv = document.getElementById('paLog');
+      if(paLog.length === 0){
+        logDiv.innerHTML = '<div style="text-align:center;padding:20px;color:#ccc">No announcements yet</div>';
+        return;
+      }
+      logDiv.innerHTML = paLog.map(item=>`
+        <div style="padding:8px;border-bottom:1px solid #eee;${item.type==='alarm'?'background:#ffebee':''}">
+          <strong>${item.time}</strong> [${item.type.toUpperCase()}] ${item.message}
+        </div>
+      `).join('');
+    }
+
+    // Generate siren sound (alternating frequency)
+    function generateAlarmTone(durationSec, frequency1=800, frequency2=1200){
+      const duration = durationSec;
+      const sampleRate = audioContext.sampleRate;
+      const buffer = audioContext.createBuffer(1, duration * sampleRate, sampleRate);
+      const data = buffer.getChannelData(0);
+      const volume = document.getElementById('alarmVolume').value / 100;
+      const toggle = 0.2; // switch frequency every 200ms
+
+      for(let i=0; i < duration * sampleRate; i++){
+        const t = i / sampleRate;
+        const freq = (Math.floor(t / toggle) % 2 === 0) ? frequency1 : frequency2;
+        data[i] = Math.sin(2 * Math.PI * freq * t) * volume;
+      }
+      return buffer;
+    }
+
+    function playAlarmSound(durationSec, freq1, freq2){
+      try{
+        const buffer = generateAlarmTone(durationSec, freq1, freq2);
+        const source = audioContext.createBufferSource();
+        source.buffer = buffer;
+        const gainNode = audioContext.createGain();
+        gainNode.connect(audioContext.destination);
+        source.connect(gainNode);
+        source.start(0);
+        source.stop(audioContext.currentTime + durationSec);
+      }catch(e){
+        console.error('Audio playback error', e);
+      }
+    }
+
+    function triggerLockdown(){
+      const duration = parseInt(document.getElementById('alarmDuration').value);
+      playAlarmSound(duration, 600, 900);
+      document.getElementById('emergencyStatus').innerHTML = '<strong style="color:var(--danger)">🔴 LOCKDOWN ALERT ACTIVE</strong> — Siren playing for '+duration+'s';
+      document.getElementById('emergencyStatus').classList.add('alarm');
+      addToLog('alarm', 'LOCKDOWN ALERT triggered');
+      setTimeout(()=>{
+        document.getElementById('emergencyStatus').innerHTML = '';
+        document.getElementById('emergencyStatus').classList.remove('alarm');
+      }, duration * 1000 + 500);
+    }
+
+    function triggerFireAlarm(){
+      const duration = parseInt(document.getElementById('alarmDuration').value);
+      playAlarmSound(duration, 1000, 1500);
+      document.getElementById('emergencyStatus').innerHTML = '<strong style="color:#ff5722">🔥 FIRE ALARM ACTIVE</strong> — Siren playing for '+duration+'s';
+      document.getElementById('emergencyStatus').classList.add('alarm');
+      addToLog('alarm', 'FIRE ALARM triggered');
+      setTimeout(()=>{
+        document.getElementById('emergencyStatus').innerHTML = '';
+        document.getElementById('emergencyStatus').classList.remove('alarm');
+      }, duration * 1000 + 500);
+    }
+
+    function submitAnnouncement(){
+      const text = document.getElementById('announcementText').value.trim();
+      const name = document.getElementById('announcerName').value.trim() || 'System';
+      if(!text){
+        alert('Please enter an announcement.');
+        return;
+      }
+
+      // Text-to-speech
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = parseFloat(document.getElementById('speechRate').value);
+      utterance.volume = parseFloat(document.getElementById('speechVolume').value) / 100;
+      speechSynthesis.cancel(); // stop any ongoing speech
+      speechSynthesis.speak(utterance);
+
+      document.getElementById('announcementStatus').innerHTML = '<strong style="color:var(--success)">✓ Broadcasting announcement...</strong>';
+      document.getElementById('announcementStatus').classList.add('active');
+
+      addToLog('announcement', name + ': ' + text);
+
+      utterance.onend = ()=>{
+        document.getElementById('announcementStatus').innerHTML = '<strong style="color:var(--success)">✓ Announcement complete</strong>';
+        setTimeout(()=>{
+          document.getElementById('announcementStatus').innerHTML = '';
+          document.getElementById('announcementStatus').classList.remove('active');
+        }, 2000);
+      };
+
+      // Clear form
+      document.getElementById('announcementText').value = '';
+    }
+
+    // Allow Enter key to submit announcement
+    document.getElementById('announcementText').addEventListener('keydown', (e)=>{
+      if(e.ctrlKey && e.key === 'Enter'){ submitAnnouncement(); }
+    });
+  </script>
+</body>
+</html>
