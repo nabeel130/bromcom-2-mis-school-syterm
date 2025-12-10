@@ -1,6 +1,13 @@
-Release draft: v0.1.0
+Release: v0.2.0
 
 Changelog
+
+**v0.2.0 (Latest)**
+- Added `pa_system.html` — PA system with lockdown/fire alarm sirens and text-to-speech announcements (rings immediately on button press).
+- Added `school_bell.html` — UK-style school bell system with configurable schedule and immediate ring on demand.
+- Attendance and Behaviour systems working with client/server persistence.
+
+**v0.1.0**
 - Added modern `teacher_attendance.html` UI with client-side persistence and midnight reset logic.
 - Added `behavior_register.html` (Bromcom-style grid) with client persistence and midnight reset.
 - Implemented server: small Express API at `server/index.js` supporting GET/POST state for `attendance` and `behavior`, and `/api/reset`.
@@ -36,14 +43,18 @@ Run server locally
 ```bash
 # install dependencies
 npm install
-# start server
-npm run start
-# server listens on :4000 by default
+# start server (runs on :4000)
+npm start
 ```
 
-Client pages
+Client pages — Open any of these in your browser:
 
-- Open `behavior_register.html` and `teacher_attendance.html` in a browser. They will try to sync with `http://localhost:4000` and fallback to localStorage.
+- `teacher_attendance.html` — Modern attendance register with detention logic
+- `behavior_register.html` — Bromcom-style behavior grid register  
+- `pa_system.html` — PA system (lockdown alert, fire alarm, announcements)
+- `school_bell.html` — School bell system (scheduled or manual ring)
+
+All pages will try to sync with `http://localhost:4000` and fallback to localStorage if server unavailable.
 
 Testing midnight reset
 
