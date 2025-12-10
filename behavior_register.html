@@ -133,7 +133,7 @@
 
   <script>
     // Build example register with many date columns
-    const students = [
+    let students = [
       'abid','rakeeb','nadeem','waqas','rais','arfan','sebi','rehan','adeel','haffis','ambo','sajad','afraz','syed','ideeris','fasil','shazi','nasir','usman','shaf','tahir','aqeel'
     ].map((n,i)=>({id:100+i,name:n.toUpperCase(),cells:[],detained:false}));
 
@@ -154,28 +154,34 @@
       theadRow.appendChild(th);
     });
 
-    // populate rows
+    // populate rows helper
     const tbody = document.getElementById('regBody');
-    students.forEach((s,si)=>{
-      const tr = document.createElement('tr');
-      const nameTd = document.createElement('td');
-      nameTd.className = 'name-col';
-      nameTd.dataset.studentIdx = si;
-      nameTd.textContent = s.name;
-      tr.appendChild(nameTd);
+    function populateRows(){
+      tbody.innerHTML = '';
+      students.forEach((s,si)=>{
+        const tr = document.createElement('tr');
+        const nameTd = document.createElement('td');
+        nameTd.className = 'name-col';
+        nameTd.dataset.studentIdx = si;
+        nameTd.textContent = s.name;
+        tr.appendChild(nameTd);
 
-      s.cells = new Array(columns.length).fill(0); // 0 = empty, 1-5 = codes, "/" = late
-      columns.forEach((col,ci)=>{
-        const td = document.createElement('td');
-        td.className = 'behavior-cell code-empty';
-        td.textContent = '—';
-        td.dataset.r = si;
-        td.dataset.c = ci;
-        td.addEventListener('click', onCellClick);
-        tr.appendChild(td);
+        s.cells = new Array(columns.length).fill(0); // 0 = empty, 1-5 = codes, "/" = late
+        columns.forEach((col,ci)=>{
+          const td = document.createElement('td');
+          td.className = 'behavior-cell code-empty';
+          td.textContent = '—';
+          td.dataset.r = si;
+          td.dataset.c = ci;
+          td.addEventListener('click', onCellClick);
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
       });
-      tbody.appendChild(tr);
-    });
+    }
+
+    // initial render
+    populateRows();
 
     // Behavior code definitions
     const codeMap = {
@@ -370,6 +376,29 @@
     }
 
     const SERVER_BASE = 'http://localhost:4000';
+
+    // Try load shared roster from server and apply
+    async function tryLoadRoster(){
+      try{
+        const resp = await fetch(SERVER_BASE + '/api/state/roster');
+        if(!resp.ok) return null;
+        const json = await resp.json();
+        if(json && json.data && Array.isArray(json.data) && json.data.length) return json.data;
+      }catch(e){}
+      return null;
+    }
+
+    async function applyRosterIfAvailable(){
+      const roster = await tryLoadRoster();
+      if(!roster) return;
+      // map roster entries to students model
+      students = roster.map((r,i)=>({ id: r.id || ('R'+(100+i)), name: (r.name||r.Name||'').toUpperCase(), cells: new Array(columns.length).fill(0), detained:false }));
+      populateRows();
+      console.log('Behavior register: roster loaded from server');
+    }
+
+    // try to load roster
+    applyRosterIfAvailable();
 
     async function tryLoadFromServer(){
       try{

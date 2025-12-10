@@ -288,6 +288,17 @@
       return false;
     }
 
+    // Try load roster (shared) from server
+    async function tryLoadRoster(){
+      try{
+        const resp = await fetch(SERVER_BASE + '/api/state/roster');
+        if(!resp.ok) return null;
+        const json = await resp.json();
+        if(json && json.data && Array.isArray(json.data) && json.data.length) return json.data;
+      }catch(e){}
+      return null;
+    }
+
     async function trySaveToServer(){
       try{
         const resp = await fetch(SERVER_BASE + '/api/state/attendance', {
@@ -298,6 +309,13 @@
     }
 
     (async function init(){
+      // attempt to load roster first (shared source)
+      const roster = await tryLoadRoster();
+      if(roster){
+        students = roster.map(r=>({ id: r.id || r.ID || ('S' + Math.random().toString(36).slice(2,6).toUpperCase()), name: (r.name||r.name)|| (r.Name||''), fsm:'No', pp:'No', attendance:'-', lates:0, detained:false }));
+        console.log('Loaded roster from server for attendance');
+      }
+
       const loaded = await tryLoadFromServer();
       if(!loaded){
         // load saved state if last reset is today
@@ -305,7 +323,7 @@
         if(last && last >= todayStr() && loadState()){
           console.log('Loaded attendance from storage');
         } else {
-          students = JSON.parse(JSON.stringify(defaultStudents));
+          if(!students || students.length===0) students = JSON.parse(JSON.stringify(defaultStudents));
           localStorage.setItem(LAST_RESET_KEY, todayStr());
         }
       }

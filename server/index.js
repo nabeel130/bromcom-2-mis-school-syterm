@@ -11,11 +11,14 @@ const TIMEZONE = process.env.TIMEZONE || 'Europe/London';
 
 function readState(){
   try{
-    if(!fs.existsSync(DATA_FILE)) return { attendance: {}, behavior: {}, lastReset: null };
-    return JSON.parse(fs.readFileSync(DATA_FILE,'utf8'));
+    if(!fs.existsSync(DATA_FILE)) return { attendance: {}, behavior: {}, roster: [], lastReset: null };
+    const s = JSON.parse(fs.readFileSync(DATA_FILE,'utf8'));
+    // ensure roster key exists
+    if(!s.roster) s.roster = [];
+    return s;
   }catch(e){
     console.error('readState error', e);
-    return { attendance: {}, behavior: {}, lastReset: null };
+    return { attendance: {}, behavior: {}, roster: [], lastReset: null };
   }
 }
 
@@ -25,7 +28,7 @@ function writeState(obj){
 
 // initialize file if missing
 if(!fs.existsSync(DATA_FILE)){
-  writeState({ attendance: {}, behavior: {}, lastReset: null });
+  writeState({ attendance: {}, behavior: {}, roster: [], lastReset: null });
 }
 
 const app = express();

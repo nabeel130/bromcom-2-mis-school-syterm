@@ -331,7 +331,7 @@
     (function ensureDefaultPresets(){ const st = loadState(); if(!st.presets || st.presets.length===0){ st.presets=[{name:'Lockdown 15s',duration:15,volume:80},{name:'Fire 20s',duration:20,volume:90}]; saveState(st); } renderPresets(); })();
 
     // Student roster (from attendance/behaviour registers)
-    const students = [
+    let students = [
       { id: 'S001', name: 'Abid' },{ id: 'S002', name: 'Rakeeb' },{ id: 'S003', name: 'Nadeem' },{ id: 'S004', name: 'Waqas' },
       { id: 'S005', name: 'Rais' },{ id: 'S006', name: 'Arfan' },{ id: 'S007', name: 'Sebi' },{ id: 'S008', name: 'Rehan' },
       { id: 'S009', name: 'Adeel' },{ id: 'S010', name: 'Haffis' },{ id: 'S011', name: 'Ambo' },{ id: 'S012', name: 'Sajad' },
@@ -358,7 +358,21 @@
       el.innerHTML = students.map(s=>`<div style="padding:6px;border-bottom:1px solid rgba(255,255,255,0.02)"><strong style="color:#e6eef6">${s.name}</strong><div style="color:var(--muted);font-size:12px">${s.id}</div></div>`).join('');
     }
 
-    document.addEventListener('DOMContentLoaded', ()=>{
+    async function tryLoadRoster(){
+      try{
+        const resp = await fetch('/api/state/roster');
+        if(!resp.ok) return null;
+        const json = await resp.json();
+        if(json && json.data && Array.isArray(json.data) && json.data.length) return json.data;
+      }catch(e){ }
+      return null;
+    }
+
+    document.addEventListener('DOMContentLoaded', async ()=>{
+      const roster = await tryLoadRoster();
+      if(roster){
+        students = roster.map(r=>({ id: r.id || r.ID || r.Id, name: r.name || r.Name || '' }));
+      }
       populateRecipientSelect();
       renderPresets();
       renderLog();
