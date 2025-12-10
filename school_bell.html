@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>School Bell System — MIS</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root{
+      --primary:#3f51b5;
+      --success:#4caf50;
+      --warning:#ff9800;
+      --danger:#d32f2f;
+      --bg:#f5f7fa;
+      --card:#fff;
+      --muted:#757575;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:'Segoe UI', Arial, sans-serif;background:var(--bg);color:#333}
+
+    .container{max-width:1200px;margin:0 auto;padding:20px}
+    h1{color:var(--primary);text-align:center;margin-bottom:30px;display:flex;align-items:center;justify-content:center;gap:12px}
+    h1 i{font-size:32px}
+
+    .grid{display:grid;grid-template-columns:2fr 1fr;gap:24px;margin-bottom:30px}
+
+    .card{background:var(--card);padding:24px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.08)}
+
+    .card h2{margin-top:0;color:var(--primary);font-size:18px;display:flex;align-items:center;gap:10px}
+    .card p{color:var(--muted);font-size:14px;margin:12px 0}
+
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border:0;border-radius:8px;cursor:pointer;font-weight:600;transition:all 0.2s}
+    .btn.primary{background:var(--primary);color:white}
+    .btn.primary:hover{background:#283593;box-shadow:0 4px 12px rgba(63,81,181,0.2)}
+    .btn.success{background:var(--success);color:white}
+    .btn.success:hover{background:#388e3c}
+    .btn.danger{background:var(--danger);color:white}
+    .btn.danger:hover{background:#b71c1c}
+    .btn.small{padding:8px 12px;font-size:13px}
+
+    .schedule-list{list-style:none;padding:0;margin:0}
+    .schedule-item{display:grid;grid-template-columns:100px 100px 1fr auto;gap:12px;align-items:center;padding:12px;border-bottom:1px solid #eee;background:#f9f9f9;border-radius:6px;margin-bottom:8px}
+    .schedule-item input{padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px}
+    .schedule-item label{font-weight:600;color:var(--primary);font-size:13px}
+
+    .controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+
+    .test-bell{display:flex;flex-direction:column;gap:12px}
+    .bell-button{padding:16px;background:linear-gradient(135deg,var(--primary),#5e35b1);color:white;border:0;border-radius:10px;cursor:pointer;font-weight:700;font-size:16px;transition:all 0.2s}
+    .bell-button:hover{transform:scale(1.05);box-shadow:0 8px 20px rgba(63,81,181,0.3)}
+    .bell-button:active{transform:scale(0.98)}
+
+    .bell-volume{margin-top:12px}
+    .bell-volume label{display:block;margin-bottom:8px;color:var(--primary);font-weight:600;font-size:13px}
+    .bell-volume input[type="range"]{width:100%;margin:8px 0}
+
+    .status-indicator{display:flex;align-items:center;gap:8px;padding:12px;border-radius:8px;font-weight:600;font-size:13px;margin-top:12px}
+    .status-indicator.active{background:#e8f5e9;color:var(--success);border-left:4px solid var(--success)}
+    .status-indicator.inactive{background:#f5f5f5;color:var(--muted);border-left:4px solid var(--muted)}
+
+    .log{margin-top:16px;background:#f9f9f9;padding:12px;border-radius:8px;max-height:200px;overflow-y:auto;font-size:12px;color:var(--muted)}
+    .log-entry{padding:6px 0;border-bottom:1px solid #eee}
+    .log-entry:last-child{border-bottom:none}
+
+    @media (max-width:768px){
+      .grid{grid-template-columns:1fr}
+      .schedule-item{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1><i class="fas fa-bell"></i> School Bell System</h1>
+
+    <div class="grid">
+      <!-- Schedule Management -->
+      <div class="card">
+        <h2><i class="fas fa-clock"></i> Bell Schedule</h2>
+        <p>Configure times when the bell should ring automatically.</p>
+
+        <div class="controls">
+          <button class="btn primary" onclick="addBellTime()">+ Add Time</button>
+          <button class="btn danger small" onclick="clearAllTimes()">Clear All</button>
+        </div>
+
+        <ul class="schedule-list" id="scheduleList">
+          <!-- items added by JS -->
+        </ul>
+
+        <div style="margin-top:16px;padding:12px;background:#f0f4ff;border-radius:8px;font-size:13px;color:var(--muted)">
+          <strong>How it works:</strong> Add start and end times. The bell will ring at those times if "Schedule Active" is enabled.
+          Times are checked every minute.
+        </div>
+
+        <div class="status-indicator" id="scheduleStatus">
+          <i class="fas fa-circle"></i> <span>Schedule Inactive</span>
+        </div>
+
+        <button class="btn success" style="width:100%;margin-top:12px" id="toggleScheduleBtn" onclick="toggleSchedule()">
+          <i class="fas fa-play"></i> Enable Schedule
+        </button>
+
+        <div class="log" id="bellLog">
+          <div class="log-entry" style="color:#ccc;text-align:center">No bell rings yet</div>
+        </div>
+      </div>
+
+      <!-- Test Bell -->
+      <div class="card">
+        <h2><i class="fas fa-play"></i> Test Bell</h2>
+        <p>Play a bell sound immediately to test volume and tone.</p>
+
+        <div class="test-bell">
+          <button class="bell-button" onclick="playBell()">
+            <i class="fas fa-bell"></i> Ring Bell Now
+          </button>
+
+          <div class="bell-volume">
+            <label>Bell Volume</label>
+            <input type="range" id="bellVolume" min="0" max="100" value="70" />
+            <div style="text-align:center;color:var(--muted);font-size:12px;margin-top:6px">
+              <span id="volumeDisplay">70</span>%
+            </div>
+          </div>
+
+          <div style="margin-top:16px;padding:12px;background:#f0f4ff;border-radius:8px;font-size:13px;color:var(--muted)">
+            <strong>Bell Type:</strong> UK-style school chime (pleasant, clear tone)
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    let schedule = JSON.parse(localStorage.getItem('bellSchedule') || '[]');
+    let scheduleActive = JSON.parse(localStorage.getItem('bellScheduleActive') || 'false');
+    let bellLog = JSON.parse(localStorage.getItem('bellLog') || '[]');
+
+    // Update volume display
+    document.getElementById('bellVolume').addEventListener('input', (e)=>{
+      document.getElementById('volumeDisplay').textContent = e.target.value;
+    });
+
+    // UK-style school bell chime (musical notes)
+    function generateBellTone(){
+      const duration = 2; // 2 second bell tone
+      const sampleRate = audioContext.sampleRate;
+      const buffer = audioContext.createBuffer(1, duration * sampleRate, sampleRate);
+      const data = buffer.getChannelData(0);
+      const volume = document.getElementById('bellVolume').value / 100 * 0.3; // cap at 0.3
+
+      // Primary frequency (E4 = 329.63 Hz)
+      const freq1 = 330;
+      // Harmonic (E5 = 659.26 Hz)
+      const freq2 = 660;
+      // Sub harmonic (E3 = 164.81 Hz)
+      const freq3 = 165;
+
+      for(let i = 0; i < duration * sampleRate; i++){
+        const t = i / sampleRate;
+        // Decay envelope
+        const envelope = Math.exp(-t * 1.5);
+        // Mix frequencies with slight phasing
+        const wave = (Math.sin(2 * Math.PI * freq1 * t) * 0.5 +
+                      Math.sin(2 * Math.PI * freq2 * t) * 0.3 +
+                      Math.sin(2 * Math.PI * freq3 * t) * 0.2);
+        data[i] = wave * envelope * volume;
+      }
+      return buffer;
+    }
+
+    function playBell(){
+      try{
+        const buffer = generateBellTone();
+        const source = audioContext.createBufferSource();
+        source.buffer = buffer;
+        const gainNode = audioContext.createGain();
+        gainNode.connect(audioContext.destination);
+        source.connect(gainNode);
+        source.start(0);
+      }catch(e){
+        console.error('Bell playback error', e);
+      }
+    }
+
+    function addBellTime(){
+      schedule.push({ start: '09:00', end: '09:05' });
+      saveSchedule();
+      renderSchedule();
+    }
+
+    function removeBellTime(idx){
+      schedule.splice(idx, 1);
+      saveSchedule();
+      renderSchedule();
+    }
+
+    function updateBellTime(idx, field, value){
+      schedule[idx][field] = value;
+      saveSchedule();
+    }
+
+    function saveSchedule(){
+      localStorage.setItem('bellSchedule', JSON.stringify(schedule));
+    }
+
+    function renderSchedule(){
+      const list = document.getElementById('scheduleList');
+      if(schedule.length === 0){
+        list.innerHTML = '<li style="padding:12px;color:var(--muted);text-align:center">No times configured</li>';
+        return;
+      }
+      list.innerHTML = schedule.map((item, i)=>`
+        <li class="schedule-item">
+          <div>
+            <label>Start</label>
+            <input type="time" value="${item.start}" onchange="updateBellTime(${i},'start',this.value)" />
+          </div>
+          <div>
+            <label>End</label>
+            <input type="time" value="${item.end}" onchange="updateBellTime(${i},'end',this.value)" />
+          </div>
+          <div style="color:var(--muted);font-size:13px">
+            Bell rings between <strong>${item.start}</strong> and <strong>${item.end}</strong> daily
+          </div>
+          <button class="btn danger small" onclick="removeBellTime(${i})">
+            <i class="fas fa-trash"></i>
+          </button>
+        </li>
+      `).join('');
+    }
+
+    function toggleSchedule(){
+      scheduleActive = !scheduleActive;
+      localStorage.setItem('bellScheduleActive', JSON.stringify(scheduleActive));
+      updateScheduleStatus();
+      document.getElementById('toggleScheduleBtn').innerHTML = scheduleActive ?
+        '<i class="fas fa-pause"></i> Disable Schedule' :
+        '<i class="fas fa-play"></i> Enable Schedule';
+    }
+
+    function updateScheduleStatus(){
+      const indicator = document.getElementById('scheduleStatus');
+      if(scheduleActive){
+        indicator.classList.remove('inactive');
+        indicator.classList.add('active');
+        indicator.innerHTML = '<i class="fas fa-circle"></i> <span>Schedule Active — Monitoring...</span>';
+      } else {
+        indicator.classList.remove('active');
+        indicator.classList.add('inactive');
+        indicator.innerHTML = '<i class="fas fa-circle"></i> <span>Schedule Inactive</span>';
+      }
+    }
+
+    function clearAllTimes(){
+      if(confirm('Clear all scheduled times?')){
+        schedule = [];
+        saveSchedule();
+        renderSchedule();
+      }
+    }
+
+    function addLogEntry(message){
+      const now = new Date().toLocaleTimeString();
+      bellLog.unshift({ time: now, message });
+      if(bellLog.length > 15) bellLog.pop();
+      localStorage.setItem('bellLog', JSON.stringify(bellLog));
+      updateLogUI();
+    }
+
+    function updateLogUI(){
+      const logDiv = document.getElementById('bellLog');
+      if(bellLog.length === 0){
+        logDiv.innerHTML = '<div class="log-entry" style="color:#ccc;text-align:center">No bell rings yet</div>';
+        return;
+      }
+      logDiv.innerHTML = bellLog.map(item=>`
+        <div class="log-entry"><strong>${item.time}</strong> — ${item.message}</div>
+      `).join('');
+    }
+
+    function checkSchedule(){
+      if(!scheduleActive) return;
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2,'0');
+      const mm = String(now.getMinutes()).padStart(2,'0');
+      const currentTime = hh + ':' + mm;
+
+      schedule.forEach(item=>{
+        if(currentTime >= item.start && currentTime <= item.end){
+          // bell should ring
+          playBell();
+          addLogEntry('Bell rang (' + currentTime + ')');
+        }
+      });
+    }
+
+    // Check schedule every minute
+    setInterval(checkSchedule, 60000);
+
+    // Initialize UI
+    (function init(){
+      renderSchedule();
+      updateScheduleStatus();
+      updateLogUI();
+      if(scheduleActive){
+        document.getElementById('toggleScheduleBtn').innerHTML = '<i class="fas fa-pause"></i> Disable Schedule';
+      }
+    })();
+  </script>
+</body>
+</html>
