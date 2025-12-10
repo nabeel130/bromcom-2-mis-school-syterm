@@ -426,43 +426,7 @@
       }catch(e){ return false; }
     }
 
-    (async function init(){
-      const loaded = await tryLoadFromServer();
-      if(!loaded){
-        // load saved state if last reset is today
-        const last = localStorage.getItem(LAST_RESET_KEY);
-        if(last && last >= todayStr() && loadState()){
-          console.log('Loaded attendance from storage');
-        } else {
-          students = JSON.parse(JSON.stringify(defaultStudents));
-          localStorage.setItem(LAST_RESET_KEY, todayStr());
-        }
-      }
-
-      buildRoster(students);
-      scheduleMidnightReset();
-
-      // wire UI
-      document.getElementById('search').addEventListener('input', (e)=>{
-        const q = e.target.value.toLowerCase().trim();
-        const filtered = students.filter(s=>s.name.toLowerCase().includes(q) || s.id.toLowerCase().includes(q));
-        buildRoster(filtered);
-      });
-
-      document.getElementById('takeRegister').addEventListener('click', async ()=>{
-        // try server save first
-        const ok = await trySaveToServer();
-        if(!ok) saveState();
-        console.table(students.map(s=>({id:s.id,name:s.name,attendance:s.attendance,poor:s.poor,lates:s.lates})))
-        alert('Register submitted — open console to view payload (F12).');
-      });
-
-      document.getElementById('exportBtn').addEventListener('click', ()=>{
-        const csv = ['id,name,attendance,fsm,detention'].concat(students.map(s=>`${s.id},"${s.name}",${s.attendance},${s.fsm},${s.poor>=2||s.lates>=2?'YES':'NO'}`)).join('\n');
-        const blob = new Blob([csv],{type:'text/csv'});
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download='attendance.csv'; a.click();
-      });
-    })();
+    
   </script>
 </body>
 </html>
