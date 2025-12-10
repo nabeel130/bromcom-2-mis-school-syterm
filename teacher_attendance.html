@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Teacher — Attendance | MIS 2.0</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root{
+      --bg:#f3f6fb; --card:#ffffff; --muted:#98a0b3; --accent:#1fb6ff; --accent-2:#3f51b5;
+      --success:#2ecc71; --danger:#ff5252; --glass: rgba(255,255,255,0.6);
+      --row-radius:12px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter, 'Segoe UI', Roboto, Arial, sans-serif;background:linear-gradient(180deg,#eef6ff 0%,var(--bg) 40%);color:#263147}
+
+    /* app layout */
+    .app{display:flex;min-height:100vh}
+    .sidebar{width:260px;background:linear-gradient(180deg,var(--accent-2),#263159);color:#fff;padding:22px 18px;display:flex;flex-direction:column;gap:18px}
+    .brand{font-weight:700;font-size:18px;display:flex;align-items:center;gap:12px}
+    .brand i{font-size:22px;opacity:0.95}
+    .nav{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+    .nav a{display:flex;align-items:center;gap:12px;color:rgba(255,255,255,0.9);text-decoration:none;padding:10px;border-radius:8px;font-size:14px}
+    .nav a.active{background:rgba(255,255,255,0.06);font-weight:600}
+
+    main{flex:1;padding:22px;display:flex;flex-direction:column;gap:20px}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px}
+    .breadcrumbs{color:var(--muted);font-size:13px}
+    .top-actions{display:flex;gap:10px;align-items:center}
+    .btn{background:var(--accent);color:white;padding:10px 14px;border-radius:10px;border:0;cursor:pointer;font-weight:600}
+    .btn.ghost{background:transparent;color:var(--accent-2);border:1px solid rgba(33,150,243,0.12)}
+
+    /* card */
+    .card{background:var(--card);padding:18px;border-radius:14px;box-shadow:0 10px 30px rgba(31,182,255,0.05);}
+
+    /* roster header */
+    .roster-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+    .filters{display:flex;gap:8px;align-items:center}
+    .search{display:flex;align-items:center;background:#f5f8fb;padding:8px 10px;border-radius:999px;gap:8px;color:var(--muted);min-width:280px}
+    .search input{border:0;background:transparent;outline:0;font-size:14px}
+
+    /* table-like list */
+    .roster{width:100%;border-collapse:collapse}
+    .roster-row{display:grid;grid-template-columns: 1fr 180px 260px 90px 160px;align-items:center;padding:14px;border-radius:var(--row-radius);gap:12px;margin-bottom:10px;background:linear-gradient(180deg,rgba(255,255,255,0.6),rgba(250,252,255,0.9));border:1px solid rgba(30,41,60,0.03)}
+
+    .avatar{width:42px;height:42px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--accent-2),#7b61ff);color:white;font-weight:700}
+    .name{display:flex;align-items:center;gap:12px;font-weight:600}
+    .sub{color:var(--muted);font-size:13px;font-weight:500}
+
+    .badge{display:inline-block;padding:6px 10px;border-radius:999px;font-size:13px;font-weight:700}
+    .badge.present{background:rgba(46,204,113,0.12);color:var(--success)}
+    .badge.absent{background:rgba(255,82,82,0.08);color:var(--danger)}
+
+    .weekly-dots{display:flex;gap:6px;align-items:center}
+    .dot{width:10px;height:10px;border-radius:50%;background:#dfe8f6;border:3px solid #fff;box-shadow:0 1px 0 rgba(0,0,0,0.03)}
+    .dot.present{background:var(--success)}
+    .dot.absent{background:var(--danger)}
+
+    .small-muted{font-size:13px;color:var(--muted);font-weight:600}
+    .alert{padding:8px 10px;border-radius:8px;font-weight:700;text-align:center}
+    .alert.warning{background:#fff2e6;color:#ff8a00}
+    .alert.critical{background:#ffebee;color:var(--danger)}
+
+    /* responsive */
+    @media (max-width:1000px){
+      .roster-row{grid-template-columns:1fr 140px 1fr}
+      .roster-row > :nth-child(3){order:3}
+    }
+    @media (max-width:640px){
+      .sidebar{display:none}
+      .roster-row{grid-template-columns:1fr 120px}
+      .topbar{flex-direction:column;align-items:flex-start;gap:10px}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand"><i class="fas fa-school"></i> MIS 2.0</div>
+      <nav class="nav">
+        <a href="#" class="active"><i class="fas fa-list-ul"></i> Student List</a>
+        <a href="#"><i class="fas fa-child"></i> Behaviour</a>
+        <a href="#"><i class="fas fa-file-invoice"></i> Assignments</a>
+        <a href="#"><i class="fas fa-calendar-alt"></i> Timetable</a>
+        <a href="#"><i class="fas fa-award"></i> Marksheet</a>
+      </nav>
+      <div style="margin-top:auto;font-size:13px;opacity:0.9">Usta Saqib — 5 Maple</div>
+    </aside>
+
+    <main>
+      <div class="topbar">
+        <div>
+          <div class="breadcrumbs">My Dashboard  ›  <strong style="color:var(--accent-2)">5 Maple</strong>  ›  <span style="color:var(--muted)">Session: AM</span></div>
+          <h1 style="margin:8px 0 0 0">Student List <small style="color:var(--muted);font-weight:600">(29)</small></h1>
+        </div>
+
+        <div class="top-actions">
+          <div class="search"><i class="fas fa-search"></i><input id="search" placeholder="Search student or ID" /></div>
+          <button class="btn ghost" id="exportBtn"><i class="fas fa-file-export"></i>&nbsp;Export</button>
+          <button class="btn" id="takeRegister"><i class="fas fa-check"></i>&nbsp;Take Register</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="roster-header">
+          <div style="display:flex;gap:12px;align-items:center">
+            <button class="btn ghost">Behaviour</button>
+            <button class="btn ghost">Send Message</button>
+            <button class="btn ghost">Actions <i class="fas fa-caret-down" style="margin-left:8px"></i></button>
+          </div>
+          <div class="small-muted">Columns: Student • Attendance • Weekly • FSM • Detention</div>
+        </div>
+
+        <div id="rosterList">
+          <!-- rows inserted by JS -->
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Sample student data (adapted from your list)
+    const STORAGE_KEY = 'attendance_state_v1';
+    const LAST_RESET_KEY = 'attendance_lastReset_v1';
+
+    const defaultStudents = [
+      {id:'H001', name:'Aleksandroviciute, Scott', fsm:'No', pp:'Yes', weekly:[1,1,1,1,1], attendance:'P', poor:0, lates:0},
+      {id:'H002', name:'Anifowoshe, Matthew', fsm:'Yes', pp:'Yes', weekly:[1,1,0,1,1], attendance:'P', poor:0, lates:0},
+      {id:'H003', name:'Balandé, Patricia', fsm:'No', pp:'No', weekly:[0,1,0,0,1], attendance:'A', poor:1, lates:0},
+      {id:'H004', name:'Costros, Jennie', fsm:'Yes', pp:'Yes', weekly:[0,0,0,1,0], attendance:'A', poor:2, lates:1},
+      {id:'H005', name:'Denton, David', fsm:'No', pp:'No', weekly:[1,1,1,1,1], attendance:'P', poor:0, lates:0},
+      {id:'H006', name:'Enwerem, Kieron', fsm:'Yes', pp:'Yes', weekly:[1,0,1,0,1], attendance:'P', poor:0, lates:2}
+    ];
+
+    let students = [];
+
+    function initials(name){
+      return name.split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase();
+    }
+
+    function renderRow(s){
+      const row = document.createElement('div');
+      row.className = 'roster-row';
+      row.id = 'row-'+s.id;
+
+      // name + avatar
+      const nameHtml = `<div class="name"><div class="avatar">${initials(s.name)}</div><div><div style=\"font-weight:700\">${s.name}</div><div class=\"sub\">${s.id}</div></div></div>`;
+
+      // attendance pill + toggle
+      const attHtml = `<div style=\"display:flex;align-items:center;gap:10px\">`+
+        `<div class=\"badge ${s.attendance==='P'?'present':'absent'}\" id=\"att-${s.id}\">${s.attendance==='P'?'Present':'Absent'}</div>`+
+        `<div style=\"display:flex;gap:6px\"><button class=\"btn ghost\" onclick=\"mark('${s.id}','P')\">P</button><button class=\"btn ghost\" onclick=\"mark('${s.id}','A')\">A</button><button class=\"btn ghost\" onclick=\"mark('${s.id}','L')\">L</button></div></div>`;
+
+      // weekly
+      const dots = s.weekly.map((w,i)=>`<div class=\"dot ${w? 'present':''}\" title=\"Day ${i+1}\"></div>`).join('');
+      const weeklyHtml = `<div class=\"weekly-dots\">${dots}</div>`;
+
+      // fsm
+      const fsmHtml = `<div class=\"small-muted\">${s.fsm}</div>`;
+
+      // detention cell
+      const detentionHtml = `<div id=\"det-${s.id}\" class=\"small-muted\">${s.poor>=2 || s.lates>=2 ? 'DETENTION PENDING':'---'}</div>`;
+
+      row.innerHTML = nameHtml + attHtml + weeklyHtml + fsmHtml + detentionHtml;
+
+      if(s.poor>=2 || s.lates>=2){
+        row.style.border = '1px solid rgba(255,82,82,0.12)';
+        row.querySelector('.name').style.color = 'var(--danger)';
+        row.querySelector('#det-'+s.id).className = 'alert critical';
+      }
+
+      return row;
+    }
+
+    function buildRoster(list){
+      const container = document.getElementById('rosterList');
+      container.innerHTML = '';
+      list.forEach(s=>container.appendChild(renderRow(s)));
+    }
+
+    function mark(id, status){
+      const s = students.find(x=>x.id===id);
+      if(!s) return;
+      // update attendance and counts
+      if(status==='L'){
+        s.lates = (s.lates||0) + 1;
+        if(s.lates>=2) s.poor = Math.max(s.poor,2);
+      }
+      if(status==='A'){
+        // absent increments poor slightly
+        s.poor = (s.poor||0) + 1;
+      }
+      s.attendance = status;
+
+      // update weekly latest as marker (last day)
+      s.weekly[s.weekly.length-1] = status==='P'?1:0;
+
+      // persist and rerender
+      saveState();
+      const newRow = renderRow(s);
+      const old = document.getElementById('row-'+s.id);
+      old.parentNode.replaceChild(newRow, old);
+    }
+
+    // Persistence + midnight reset
+    function todayStr(){
+      const d = new Date();
+      return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    }
+
+    function saveState(){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(students));
+    }
+
+    function loadState(){
+      try{
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if(!raw) return false;
+        const parsed = JSON.parse(raw);
+        if(Array.isArray(parsed) && parsed.length) { students = parsed; return true; }
+      }catch(e){ }
+      return false;
+    }
+
+    function performReset(){
+      students = JSON.parse(JSON.stringify(defaultStudents));
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.setItem(LAST_RESET_KEY, todayStr());
+      buildRoster(students);
+      console.log('Attendance reset at', new Date().toISOString());
+    }
+
+    function scheduleMidnightReset(){
+      const now = new Date();
+      const next = new Date(now.getFullYear(), now.getMonth(), now.getDate()+1);
+      const ms = next - now;
+      setTimeout(()=>{
+        performReset();
+        scheduleMidnightReset();
+      }, ms + 1000);
+      console.log('Scheduled attendance midnight reset in ms:', ms);
+    }
+
+    // load or init
+    const SERVER_BASE = 'http://localhost:4000';
+
+    async function tryLoadFromServer(){
+      try{
+        const resp = await fetch(SERVER_BASE + '/api/state/attendance');
+        if(!resp.ok) return false;
+        const json = await resp.json();
+        if(json && json.data){
+          const serverStudents = json.data; // expecting array of students
+          if(Array.isArray(serverStudents) && serverStudents.length){
+            students = serverStudents;
+            console.log('Loaded attendance from server');
+            return true;
+          }
+        }
+      }catch(e){ /* ignore */ }
+      return false;
+    }
+
+    async function trySaveToServer(){
+      try{
+        const resp = await fetch(SERVER_BASE + '/api/state/attendance', {
+          method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(students)
+        });
+        return resp.ok;
+      }catch(e){ return false; }
+    }
+
+    (async function init(){
+      const loaded = await tryLoadFromServer();
+      if(!loaded){
+        // load saved state if last reset is today
+        const last = localStorage.getItem(LAST_RESET_KEY);
+        if(last && last >= todayStr() && loadState()){
+          console.log('Loaded attendance from storage');
+        } else {
+          students = JSON.parse(JSON.stringify(defaultStudents));
+          localStorage.setItem(LAST_RESET_KEY, todayStr());
+        }
+      }
+
+      buildRoster(students);
+      scheduleMidnightReset();
+
+      // wire UI
+      document.getElementById('search').addEventListener('input', (e)=>{
+        const q = e.target.value.toLowerCase().trim();
+        const filtered = students.filter(s=>s.name.toLowerCase().includes(q) || s.id.toLowerCase().includes(q));
+        buildRoster(filtered);
+      });
+
+      document.getElementById('takeRegister').addEventListener('click', async ()=>{
+        // try server save first
+        const ok = await trySaveToServer();
+        if(!ok) saveState();
+        console.table(students.map(s=>({id:s.id,name:s.name,attendance:s.attendance,poor:s.poor,lates:s.lates})))
+        alert('Register submitted — open console to view payload (F12).');
+      });
+
+      document.getElementById('exportBtn').addEventListener('click', ()=>{
+        const csv = ['id,name,attendance,fsm,detention'].concat(students.map(s=>`${s.id},"${s.name}",${s.attendance},${s.fsm},${s.poor>=2||s.lates>=2?'YES':'NO'}`)).join('\n');
+        const blob = new Blob([csv],{type:'text/csv'});
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download='attendance.csv'; a.click();
+      });
+    })();
+  </script>
+</body>
+</html>

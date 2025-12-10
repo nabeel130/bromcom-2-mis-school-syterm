@@ -1,0 +1,19 @@
+{
+  "name": "bromcom-mis-server",
+  "version": "0.1.0",
+  "description": "Lightweight server for attendance/behaviour state and scheduled reset",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "nodemon server/index.js"
+  },
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "node-cron": "^3.0.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}
