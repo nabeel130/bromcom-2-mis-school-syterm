@@ -37,12 +37,12 @@
 
     .detention-grid{display:grid;gap:14px}
     .detention-card{background:linear-gradient(180deg,rgba(255,82,82,0.05),rgba(255,235,238,0.6));border:1px solid rgba(255,82,82,0.12);border-radius:12px;padding:16px;display:flex;align-items:center;gap:14px}
-    .detention-card.severe{border-left:4px solid var(--danger)}
+    .detention-card.severe{border-left:4px solid var(--danger);box-shadow:0 4px 12px rgba(255,82,82,0.15)}
 
     .detention-avatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--accent-2),#7b61ff);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px}
 
     .detention-info{flex:1}
-    .detention-info h3{margin:0 0 4px 0;font-weight:700;color:#263147}
+    .detention-info h3{margin:0 0 4px 0;font-weight:800;color:#d32f2f;font-size:16px;text-transform:uppercase;letter-spacing:0.5px;text-shadow:0 2px 4px rgba(211,47,47,0.1)}
     .detention-reason{font-size:13px;color:var(--muted);margin:2px 0}
     .detention-reason strong{color:#ff5252}
 
@@ -224,8 +224,8 @@
         <div class="detention-card${d.reasons.length > 1 ? ' severe' : ''}">
           <div class="detention-avatar">${(d.name||'?')[0].toUpperCase()}</div>
           <div class="detention-info">
-            <h3>${d.name} <small style="color:var(--muted);font-weight:400">${d.id}</small></h3>
-            ${d.reasons.map(r=>`<div class="detention-reason"><strong>${r.type === 'attendance' ? 'Attendance:' : 'Behaviour:'}</strong> ${r.detail}</div>`).join('')}
+            <h3><span style="background:linear-gradient(120deg,#ff5252,#ff8a80);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">${d.name}</span> <small style="color:var(--muted);font-weight:400;text-transform:none;font-size:12px;letter-spacing:0">${d.id}</small></h3>
+            ${d.reasons.map(r=>`<div class="detention-reason"><strong>${r.type === 'attendance' ? '📍 Attendance:' : '⚠️  Behaviour:'}</strong> ${r.detail}</div>`).join('')}
           </div>
           <div class="detention-actions">
             <button class="btn-small resolve" onclick="resolveDetention('${d.id}')">Resolve</button>
