@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lockdown Alert — MIS Emergency</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root{
+      --danger:#ff5252; --warning:#ff8a00; --dark:#1a1a1a; --bg:#fafafa;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter, 'Segoe UI', Arial, sans-serif;background:var(--dark);color:#fff}
+
+    .lockdown-page{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;position:relative;overflow:hidden}
+    
+    /* Animated background alert */
+    .lockdown-page::before{
+      content:'';
+      position:fixed;
+      top:0;left:0;width:100%;height:100%;
+      background:repeating-linear-gradient(90deg, var(--danger) 0px, var(--danger) 10px, var(--dark) 10px, var(--dark) 20px);
+      opacity:0.05;
+      animation:stripes 0.5s linear infinite;
+      z-index:0;
+      pointer-events:none;
+    }
+
+    @keyframes stripes{
+      0%{transform:translateX(0)}
+      100%{transform:translateX(20px)}
+    }
+
+    .lockdown-container{
+      position:relative;z-index:1;
+      background:rgba(26,26,26,0.95);
+      border:3px solid var(--danger);
+      border-radius:20px;
+      padding:40px;
+      max-width:600px;
+      text-align:center;
+      box-shadow:0 0 40px rgba(255,82,82,0.5), inset 0 0 40px rgba(255,82,82,0.1);
+      animation:pulse-alert 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse-alert{
+      0%, 100%{box-shadow:0 0 40px rgba(255,82,82,0.5), inset 0 0 40px rgba(255,82,82,0.1)}
+      50%{box-shadow:0 0 60px rgba(255,82,82,0.8), inset 0 0 60px rgba(255,82,82,0.2)}
+    }
+
+    .alert-icon{
+      font-size:96px;
+      color:var(--danger);
+      margin-bottom:20px;
+      animation:shake 0.5s ease-in-out infinite;
+      display:block;
+    }
+
+    @keyframes shake{
+      0%, 100%{transform:translateX(0)}
+      25%{transform:translateX(-8px)}
+      75%{transform:translateX(8px)}
+    }
+
+    h1{
+      margin:0 0 8px 0;
+      font-size:48px;
+      font-weight:900;
+      color:var(--danger);
+      text-transform:uppercase;
+      letter-spacing:3px;
+    }
+
+    .status{
+      font-size:18px;
+      color:var(--warning);
+      font-weight:700;
+      margin-bottom:24px;
+      text-transform:uppercase;
+      letter-spacing:1px;
+    }
+
+    .info{
+      background:rgba(255,82,82,0.1);
+      padding:20px;
+      border-radius:12px;
+      margin:24px 0;
+      font-size:14px;
+      line-height:1.6;
+      border-left:4px solid var(--danger);
+    }
+
+    .info p{margin:8px 0}
+
+    .controls{
+      display:flex;gap:12px;margin-top:32px;flex-wrap:wrap;justify-content:center}
+
+    .btn{
+      padding:16px 28px;
+      border:0;
+      border-radius:10px;
+      font-weight:700;
+      font-size:16px;
+      cursor:pointer;
+      text-transform:uppercase;
+      letter-spacing:1px;
+      transition:all 0.3s ease;
+    }
+
+    .btn.activate{
+      background:var(--danger);
+      color:white;
+      box-shadow:0 0 20px rgba(255,82,82,0.6);
+    }
+
+    .btn.activate:hover{
+      background:#ff3838;
+      box-shadow:0 0 30px rgba(255,82,82,0.8);
+      transform:scale(1.05);
+    }
+
+    .btn.activate:active{
+      transform:scale(0.98);
+    }
+
+    .btn.reset{
+      background:#4a5568;
+      color:white;
+    }
+
+    .btn.reset:hover{
+      background:#2d3748;
+    }
+
+    .alert-log{
+      background:rgba(0,0,0,0.3);
+      padding:16px;
+      border-radius:8px;
+      margin-top:24px;
+      font-size:12px;
+      max-height:200px;
+      overflow-y:auto;
+      border:1px solid rgba(255,82,82,0.2);
+    }
+
+    .log-entry{
+      color:#aaa;
+      margin:4px 0;
+      padding:4px 0;
+      border-bottom:1px solid rgba(255,255,255,0.1);
+    }
+
+    .log-entry.active{
+      color:var(--danger);
+      font-weight:700;
+    }
+
+    .timer{
+      font-size:24px;
+      font-weight:900;
+      color:var(--danger);
+      margin-top:16px;
+      font-family:monospace;
+    }
+
+    .status-badge{
+      display:inline-block;
+      padding:8px 16px;
+      border-radius:20px;
+      font-weight:700;
+      margin-top:12px;
+      font-size:13px;
+      text-transform:uppercase;
+    }
+
+    .status-badge.active{
+      background:var(--danger);
+      color:white;
+      animation:blink 0.8s ease-in-out infinite;
+    }
+
+    .status-badge.clear{
+      background:#4ade80;
+      color:#1a1a1a;
+    }
+
+    @keyframes blink{
+      0%, 100%{opacity:1}
+      50%{opacity:0.5}
+    }
+
+    @media (max-width:640px){
+      .lockdown-container{padding:24px}
+      h1{font-size:32px}
+      .alert-icon{font-size:64px}
+    }
+  </style>
+</head>
+<body>
+  <div class="lockdown-page">
+    <div class="lockdown-container">
+      <i class="fas fa-lock alert-icon"></i>
+      <h1>LOCKDOWN</h1>
+      <div class="status" id="statusText">System Ready</div>
+      <div class="status-badge" id="statusBadge" style="background:#4ade80;color:#1a1a1a">ALL CLEAR</div>
+
+      <div class="info">
+        <p><strong>Emergency Lockdown System</strong></p>
+        <p>Activating lockdown will trigger school-wide alert. Use only in genuine emergency.</p>
+        <p id="timestamp"></p>
+      </div>
+
+      <div class="timer" id="timerDisplay"></div>
+
+      <div class="controls">
+        <button class="btn activate" id="activateBtn" onclick="activateLockdown()">🚨 ACTIVATE LOCKDOWN</button>
+        <button class="btn reset" id="resetBtn" onclick="resetLockdown()" style="display:none">RESET SYSTEM</button>
+      </div>
+
+      <div class="alert-log">
+        <div style="font-weight:700;margin-bottom:8px">Activity Log</div>
+        <div id="logContainer">
+          <div class="log-entry">System initialized...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let isLocked = false;
+    let lockStart = null;
+    let timerInterval = null;
+
+    function log(msg){
+      const container = document.getElementById('logContainer');
+      const entry = document.createElement('div');
+      entry.className = 'log-entry' + (msg.includes('LOCKDOWN') ? ' active' : '');
+      const time = new Date().toLocaleTimeString();
+      entry.textContent = `[${time}] ${msg}`;
+      container.insertBefore(entry, container.firstChild);
+      if(container.children.length > 20) container.removeChild(container.lastChild);
+    }
+
+    function activateLockdown(){
+      if(isLocked) return;
+      
+      const confirmed = confirm('⚠️ CONFIRM: Activate LOCKDOWN? This will trigger school-wide alert.');
+      if(!confirmed) return;
+
+      isLocked = true;
+      lockStart = new Date();
+      
+      // Visual changes
+      document.getElementById('statusText').textContent = '🚨 LOCKDOWN ACTIVE';
+      document.getElementById('statusBadge').innerHTML = '🚨 LOCKDOWN ACTIVE';
+      document.getElementById('statusBadge').className = 'status-badge active';
+      document.getElementById('activateBtn').style.display = 'none';
+      document.getElementById('resetBtn').style.display = 'inline-block';
+      
+      // Play alert sound
+      playAlert();
+      
+      // Log
+      log('🚨 LOCKDOWN ACTIVATED');
+      
+      // Speech announcement
+      const msg = new SpeechSynthesisUtterance('ATTENTION. ATTENTION. LOCKDOWN ACTIVATED. SECURE ALL PREMISES. THIS IS NOT A DRILL.');
+      msg.rate = 1.2;
+      msg.pitch = 1;
+      speechSynthesis.speak(msg);
+      
+      // Start timer
+      startTimer();
+      
+      // Auto-broadcast to other pages via localStorage
+      localStorage.setItem('_lockdown_status', JSON.stringify({
+        active: true,
+        time: lockStart.toISOString()
+      }));
+    }
+
+    function resetLockdown(){
+      const confirmed = confirm('Reset lockdown system?');
+      if(!confirmed) return;
+
+      isLocked = false;
+      clearInterval(timerInterval);
+      
+      document.getElementById('statusText').textContent = 'System Ready';
+      document.getElementById('statusBadge').innerHTML = 'ALL CLEAR';
+      document.getElementById('statusBadge').className = 'status-badge clear';
+      document.getElementById('activateBtn').style.display = 'inline-block';
+      document.getElementById('resetBtn').style.display = 'none';
+      document.getElementById('timerDisplay').textContent = '';
+      
+      log('✅ Lockdown reset by user');
+      
+      // Clear broadcast
+      localStorage.removeItem('_lockdown_status');
+    }
+
+    function playAlert(){
+      // Web Audio API alert tone
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      
+      osc.connect(gain);
+      gain.connect(audioContext.destination);
+      
+      osc.frequency.value = 800;
+      osc.type = 'sine';
+      gain.gain.setValueAtTime(0.3, audioContext.currentTime);
+      
+      osc.start(audioContext.currentTime);
+      osc.stop(audioContext.currentTime + 0.5);
+      
+      // Repeat pattern
+      for(let i = 1; i < 4; i++){
+        osc.start(audioContext.currentTime + i * 0.6);
+        osc.stop(audioContext.currentTime + i * 0.6 + 0.5);
+      }
+    }
+
+    function startTimer(){
+      timerInterval = setInterval(()=>{
+        const elapsed = Math.floor((new Date() - lockStart) / 1000);
+        const mins = Math.floor(elapsed / 60);
+        const secs = elapsed % 60;
+        document.getElementById('timerDisplay').textContent = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+      }, 1000);
+    }
+
+    // Update timestamp
+    setInterval(()=>{
+      const now = new Date();
+      document.getElementById('timestamp').textContent = now.toLocaleString();
+    }, 1000);
+
+    // Listen for lockdown broadcast from other tabs
+    window.addEventListener('storage', (e)=>{
+      if(e.key === '_lockdown_status' && e.newValue){
+        const status = JSON.parse(e.newValue);
+        if(status.active){
+          log('🔔 Lockdown activated from another source');
+          // Optional: auto-activate visually
+        }
+      }
+    });
+
+    log('Lockdown system online');
+  </script>
+</body>
+</html>
