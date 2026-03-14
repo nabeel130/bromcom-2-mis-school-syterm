@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MIS School Management System</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root {
+      --primary: #3f51b5; --success: #4caf50; --warning: #ff9800; --danger: #f44336;
+      --bg: #f5f7fa; --card: #fff; --text: #333; --muted: #757575;
+      --border: #e0e0e0; --shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg); color: var(--text); line-height: 1.6;
+    }
+
+    .app { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    .header {
+      background: var(--primary); color: white; padding: 20px; border-radius: 8px;
+      margin-bottom: 20px; text-align: center;
+    }
+
+    .nav { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    .nav-btn {
+      padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer;
+      background: #e0e0e0; transition: all 0.3s;
+    }
+    .nav-btn.active { background: var(--primary); color: white; }
+
+    .page { display: none; }
+    .page.active { display: block; }
+
+    .card {
+      background: var(--card); padding: 20px; border-radius: 8px;
+      box-shadow: var(--shadow); margin-bottom: 20px;
+    }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { background: var(--primary); color: white; }
+
+    .btn {
+      padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer;
+      font-weight: 500; transition: all 0.3s;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-success { background: var(--success); color: white; }
+    .btn-warning { background: var(--warning); color: white; }
+    .btn-danger { background: var(--danger); color: white; }
+
+    .form-group { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 5px; font-weight: 500; }
+    input, select, textarea {
+      width: 100%; padding: 10px; border: 1px solid var(--border);
+      border-radius: 4px; font-size: 14px;
+    }
+
+    .status { padding: 10px; border-radius: 4px; margin: 10px 0; }
+    .status.success { background: #e8f5e9; color: var(--success); border: 1px solid var(--success); }
+    .status.warning { background: #fff3e0; color: var(--warning); border: 1px solid var(--warning); }
+    .status.error { background: #ffebee; color: var(--error); border: 1px solid var(--danger); }
+
+    .attendance-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+    .student-card {
+      padding: 15px; border: 1px solid var(--border); border-radius: 6px;
+      text-align: center; cursor: pointer; transition: all 0.3s;
+    }
+    .student-card:hover { box-shadow: var(--shadow); }
+    .student-card.present { background: #e8f5e9; border-color: var(--success); }
+    .student-card.absent { background: #ffebee; border-color: var(--danger); }
+    .student-card.late { background: #fff3e0; border-color: var(--warning); }
+
+    .bell-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .bell-button { padding: 15px 30px; font-size: 18px; }
+
+    .emergency-alert {
+      background: var(--danger); color: white; padding: 20px; border-radius: 8px;
+      text-align: center; margin: 20px 0; animation: pulse 1s infinite;
+    }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+
+    .log { max-height: 300px; overflow-y: auto; background: #f9f9f9; padding: 10px; border-radius: 4px; }
+    .log-entry { padding: 5px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+
+    @media (max-width: 768px) {
+      .nav { flex-direction: column; }
+      .grid { grid-template-columns: 1fr; }
+      .attendance-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="header">
+      <h1><i class="fas fa-school"></i> MIS School Management System</h1>
+      <p>Complete school administration solution</p>
+    </div>
+
+    <nav class="nav">
+      <button class="nav-btn active" onclick="showPage('dashboard')">Dashboard</button>
+      <button class="nav-btn" onclick="showPage('attendance')">Attendance</button>
+      <button class="nav-btn" onclick="showPage('behavior')">Behavior</button>
+      <button class="nav-btn" onclick="showPage('pa')">PA System</button>
+      <button class="nav-btn" onclick="showPage('bell')">School Bell</button>
+      <button class="nav-btn" onclick="showPage('emergency')">Emergency</button>
+      <button class="nav-btn" onclick="showPage('detentions')">Detentions</button>
+    </nav>
+
+    <!-- Dashboard Page -->
+    <div id="dashboard" class="page active">
+      <div class="grid">
+        <div class="card">
+          <h3><i class="fas fa-users"></i> Today's Attendance</h3>
+          <div id="attendance-summary">Loading...</div>
+        </div>
+        <div class="card">
+          <h3><i class="fas fa-exclamation-triangle"></i> Behavior Incidents</h3>
+          <div id="behavior-summary">Loading...</div>
+        </div>
+        <div class="card">
+          <h3><i class="fas fa-bullhorn"></i> Recent Announcements</h3>
+          <div id="announcement-log">No recent announcements</div>
+        </div>
+        <div class="card">
+          <h3><i class="fas fa-clock"></i> Next Bell</h3>
+          <div id="bell-schedule">No scheduled bells</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Attendance Page -->
+    <div id="attendance" class="page">
+      <div class="card">
+        <h3><i class="fas fa-check-circle"></i> Attendance Register</h3>
+        <div class="form-group">
+          <label>Class:</label>
+          <select id="class-select">
+            <option value="5-maple">5 Maple</option>
+            <option value="6-oak">6 Oak</option>
+          </select>
+        </div>
+        <div class="attendance-grid" id="attendance-grid"></div>
+        <div style="margin-top: 20px;">
+          <button class="btn btn-success" onclick="saveAttendance()">Save Attendance</button>
+          <button class="btn btn-primary" onclick="exportAttendance()">Export Report</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Behavior Page -->
+    <div id="behavior" class="page">
+      <div class="card">
+        <h3><i class="fas fa-exclamation-triangle"></i> Behavior Register</h3>
+        <div class="form-group">
+          <label>Student:</label>
+          <select id="behavior-student">
+            <option value="">Select student...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Incident Type:</label>
+          <select id="behavior-code">
+            <option value="1">1 - Minor disruption</option>
+            <option value="2">2 - Talking out of turn</option>
+            <option value="3">3 - Physical contact</option>
+            <option value="4">4 - Defiance</option>
+            <option value="5">5 - Serious incident</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Description:</label>
+          <textarea id="behavior-description" rows="3"></textarea>
+        </div>
+        <button class="btn btn-warning" onclick="logBehavior()">Log Incident</button>
+      </div>
+
+      <div class="card">
+        <h3>Recent Incidents</h3>
+        <div id="behavior-log" class="log"></div>
+      </div>
+    </div>
+
+    <!-- PA System Page -->
+    <div id="pa" class="page">
+      <div class="card">
+        <h3><i class="fas fa-bullhorn"></i> Public Address System</h3>
+        <div class="form-group">
+          <label>Announcement:</label>
+          <textarea id="pa-text" rows="4" placeholder="Type your announcement..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Voice Settings:</label>
+          <input type="range" id="pa-volume" min="0" max="100" value="80"> Volume
+          <input type="range" id="pa-rate" min="0.5" max="1.5" step="0.1" value="1"> Speed
+        </div>
+        <button class="btn btn-primary" onclick="makeAnnouncement()">Make Announcement</button>
+      </div>
+
+      <div class="card">
+        <h3>Emergency Controls</h3>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button class="btn btn-danger" onclick="triggerLockdown()">🚨 EVACUATION</button>
+          <button class="btn btn-danger" onclick="triggerFireAlarm()">🔥 FIRE ALARM</button>
+          <button class="btn btn-success" onclick="allClear()">✅ ALL CLEAR</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Announcement Log</h3>
+        <div id="pa-log" class="log"></div>
+      </div>
+    </div>
+
+    <!-- School Bell Page -->
+    <div id="bell" class="page">
+      <div class="card">
+        <h3><i class="fas fa-bell"></i> School Bell System</h3>
+        <div class="bell-controls">
+          <button class="btn btn-primary bell-button" onclick="ringBell()">
+            <i class="fas fa-bell"></i> Ring Bell Now
+          </button>
+          <div>
+            <label>Volume:</label>
+            <input type="range" id="bell-volume" min="0" max="100" value="70">
+          </div>
+        </div>
+        <p style="margin-top: 10px; color: var(--muted);">
+          <strong>Bell Type:</strong> Enhanced UK high school bell (3 rings, rich harmonics, authentic strike sound)
+        </p>
+      </div>
+
+      <div class="card">
+        <h3>Bell Schedule</h3>
+        <div id="bell-schedule-list"></div>
+        <button class="btn btn-primary" onclick="addBellTime()">Add Scheduled Bell</button>
+      </div>
+    </div>
+
+    <!-- Emergency Page -->
+    <div id="emergency" class="page">
+      <div class="emergency-alert" id="emergency-alert" style="display: none;">
+        <h2>🚨 EMERGENCY ALERT ACTIVE</h2>
+        <p id="emergency-message"></p>
+        <button class="btn btn-success" onclick="clearEmergency()">Clear Alert</button>
+      </div>
+
+      <div class="card">
+        <h3><i class="fas fa-shield-alt"></i> Emergency Procedures</h3>
+        <div style="display: grid; gap: 15px;">
+          <div style="padding: 15px; border: 2px solid var(--danger); border-radius: 6px;">
+            <h4>🔥 Fire Emergency</h4>
+            <p>Evacuate building immediately using nearest safe exit. Teachers lead students to assembly area.</p>
+          </div>
+          <div style="padding: 15px; border: 2px solid var(--warning); border-radius: 6px;">
+            <h4>🚨 Lockdown</h4>
+            <p>Secure all premises. Lock doors, turn off lights, remain quiet away from windows.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detentions Page -->
+    <div id="detentions" class="page">
+      <div class="card">
+        <h3><i class="fas fa-ban"></i> Detention Management</h3>
+        <div id="detention-list">
+          <table>
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Reason</th>
+                <th>Date</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="detention-table-body">
+              <tr>
+                <td colspan="4" style="text-align: center; color: var(--muted);">No detentions scheduled</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Global state
+    let currentPage = 'dashboard';
+    let students = [
+      { id: 'S001', name: 'Abid' }, { id: 'S002', name: 'Rakeeb' }, { id: 'S003', name: 'Nadeem' },
+      { id: 'S004', name: 'Waqas' }, { id: 'S005', name: 'Rais' }, { id: 'S006', name: 'Arfan' },
+      { id: 'S007', name: 'Sebi' }, { id: 'S008', name: 'Rehan' }, { id: 'S009', name: 'Adeel' },
+      { id: 'S010', name: 'Haffis' }, { id: 'S011', name: 'Ambo' }, { id: 'S012', name: 'Sajad' },
+      { id: 'S013', name: 'Afraz' }, { id: 'S014', name: 'Syed' }, { id: 'S015', name: 'Ideeris' },
+      { id: 'S016', name: 'Fasil' }, { id: 'S017', name: 'Shazi' }, { id: 'S018', name: 'Nasir' },
+      { id: 'S019', name: 'Usman' }, { id: 'S020', name: 'Shaf' }, { id: 'S021', name: 'Tahir' },
+      { id: 'S022', name: 'Aqeel' }
+    ];
+
+    let attendanceData = {};
+    let behaviorLog = [];
+    let paLog = [];
+    let bellSchedule = [];
+    let detentions = [];
+    let emergencyActive = false;
+
+    // Audio context for bell and announcements
+    let audioContext = null;
+
+    // Initialize app
+    document.addEventListener('DOMContentLoaded', function() {
+      loadData();
+      renderAttendance();
+      renderBehaviorSelect();
+      renderBellSchedule();
+      updateDashboard();
+      startBellChecker();
+    });
+
+    // Navigation
+    function showPage(pageId) {
+      document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+
+      document.getElementById(pageId).classList.add('active');
+      event.target.classList.add('active');
+      currentPage = pageId;
+    }
+
+    // Data persistence
+    function saveData() {
+      localStorage.setItem('mis_attendance', JSON.stringify(attendanceData));
+      localStorage.setItem('mis_behavior', JSON.stringify(behaviorLog));
+      localStorage.setItem('mis_pa_log', JSON.stringify(paLog));
+      localStorage.setItem('mis_bell_schedule', JSON.stringify(bellSchedule));
+      localStorage.setItem('mis_detentions', JSON.stringify(detentions));
+    }
+
+    function loadData() {
+      attendanceData = JSON.parse(localStorage.getItem('mis_attendance') || '{}');
+      behaviorLog = JSON.parse(localStorage.getItem('mis_behavior') || '[]');
+      paLog = JSON.parse(localStorage.getItem('mis_pa_log') || '[]');
+      bellSchedule = JSON.parse(localStorage.getItem('mis_bell_schedule') || '[]');
+      detentions = JSON.parse(localStorage.getItem('mis_detentions') || '[]');
+    }
+
+    // Attendance functions
+    function renderAttendance() {
+      const grid = document.getElementById('attendance-grid');
+      const today = new Date().toISOString().split('T')[0];
+
+      if (!attendanceData[today]) {
+        attendanceData[today] = {};
+      }
+
+      grid.innerHTML = students.map(student => {
+        const status = attendanceData[today][student.id] || 'unknown';
+        return `
+          <div class="student-card ${status}" onclick="markAttendance('${student.id}', '${today}')">
+            <div style="font-weight: bold;">${student.name}</div>
+            <div style="font-size: 12px; margin-top: 5px;">${status.toUpperCase()}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function markAttendance(studentId, date) {
+      if (!attendanceData[date]) attendanceData[date] = {};
+
+      const currentStatus = attendanceData[date][studentId] || 'unknown';
+      const statuses = ['unknown', 'present', 'late', 'absent'];
+      const currentIndex = statuses.indexOf(currentStatus);
+      const nextStatus = statuses[(currentIndex + 1) % statuses.length];
+
+      attendanceData[date][studentId] = nextStatus;
+      saveData();
+      renderAttendance();
+      updateDashboard();
+    }
+
+    function saveAttendance() {
+      saveData();
+      showStatus('Attendance saved successfully!', 'success');
+    }
+
+    function exportAttendance() {
+      const today = new Date().toISOString().split('T')[0];
+      const data = attendanceData[today] || {};
+      const csv = 'Student,Status\n' +
+        students.map(s => `${s.name},${data[s.id] || 'unknown'}`).join('\n');
+
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `attendance_${today}.csv`;
+      a.click();
+    }
+
+    // Behavior functions
+    function renderBehaviorSelect() {
+      const select = document.getElementById('behavior-student');
+      select.innerHTML = '<option value="">Select student...</option>' +
+        students.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+    }
+
+    function logBehavior() {
+      const studentId = document.getElementById('behavior-student').value;
+      const code = document.getElementById('behavior-code').value;
+      const description = document.getElementById('behavior-description').value;
+
+      if (!studentId || !code) {
+        showStatus('Please select student and incident type', 'error');
+        return;
+      }
+
+      const student = students.find(s => s.id === studentId);
+      const entry = {
+        id: Date.now(),
+        student: student.name,
+        studentId: studentId,
+        code: code,
+        description: description,
+        timestamp: new Date().toISOString()
+      };
+
+      behaviorLog.unshift(entry);
+
+      // Auto-add detention for code 5
+      if (code === '5') {
+        detentions.push({
+          id: Date.now(),
+          student: student.name,
+          studentId: studentId,
+          reason: description,
+          date: new Date().toISOString().split('T')[0],
+          status: 'scheduled'
+        });
+      }
+
+      saveData();
+      renderBehaviorLog();
+      renderDetentions();
+      updateDashboard();
+
+      // Clear form
+      document.getElementById('behavior-student').value = '';
+      document.getElementById('behavior-description').value = '';
+      showStatus('Behavior incident logged', 'success');
+    }
+
+    function renderBehaviorLog() {
+      const log = document.getElementById('behavior-log');
+      log.innerHTML = behaviorLog.slice(0, 10).map(entry => `
+        <div class="log-entry">
+          <strong>${entry.student}</strong> - Code ${entry.code} - ${new Date(entry.timestamp).toLocaleString()}
+          ${entry.description ? `<br><small>${entry.description}</small>` : ''}
+        </div>
+      `).join('');
+    }
+
+    // PA System functions
+    async function makeAnnouncement() {
+      const text = document.getElementById('pa-text').value.trim();
+      if (!text) {
+        showStatus('Please enter announcement text', 'error');
+        return;
+      }
+
+      // Initialize audio context if needed
+      if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      }
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.volume = document.getElementById('pa-volume').value / 100;
+      utterance.rate = document.getElementById('pa-rate').value;
+
+      speechSynthesis.speak(utterance);
+
+      // Log announcement
+      paLog.unshift({
+        id: Date.now(),
+        text: text,
+        timestamp: new Date().toISOString(),
+        type: 'announcement'
+      });
+
+      saveData();
+      renderPALog();
+      updateDashboard();
+
+      document.getElementById('pa-text').value = '';
+      showStatus('Announcement made', 'success');
+    }
+
+    function triggerLockdown() {
+      if (confirm('Activate EVACUATION? This will trigger emergency procedures.')) {
+        emergencyActive = true;
+        document.getElementById('emergency-alert').style.display = 'block';
+        document.getElementById('emergency-message').textContent =
+          'EVACUATION ALERT: All students and staff must leave the building immediately using the nearest safe exit. Teachers, take your class roster and lead students to the designated assembly area. Do not re-enter until all-clear is given.';
+
+        // Speak evacuation message
+        const utterance = new SpeechSynthesisUtterance(
+          'Attention please. This is an evacuation notice. All students and staff must leave the building immediately using the nearest safe exit. Teachers, take your class roster and lead students to the designated assembly area. Do not re-enter the building until the all-clear is given.'
+        );
+        speechSynthesis.speak(utterance);
+
+        paLog.unshift({
+          id: Date.now(),
+          text: 'EVACUATION ALERT ACTIVATED',
+          timestamp: new Date().toISOString(),
+          type: 'emergency'
+        });
+
+        saveData();
+        renderPALog();
+      }
+    }
+
+    function triggerFireAlarm() {
+      if (confirm('Activate FIRE ALARM? This will trigger continuous siren.')) {
+        emergencyActive = true;
+        document.getElementById('emergency-alert').style.display = 'block';
+        document.getElementById('emergency-message').textContent =
+          'FIRE ALARM ACTIVE: Evacuate immediately! Use nearest safe exit.';
+
+        // Start continuous fire siren
+        startFireSiren();
+
+        paLog.unshift({
+          id: Date.now(),
+          text: 'FIRE ALARM ACTIVATED',
+          timestamp: new Date().toISOString(),
+          type: 'emergency'
+        });
+
+        saveData();
+        renderPALog();
+      }
+    }
+
+    function allClear() {
+      emergencyActive = false;
+      document.getElementById('emergency-alert').style.display = 'none';
+      stopSiren();
+
+      paLog.unshift({
+        id: Date.now(),
+        text: 'ALL CLEAR - Emergency resolved',
+        timestamp: new Date().toISOString(),
+        type: 'emergency'
+      });
+
+      saveData();
+      renderPALog();
+      showStatus('All clear signal sent', 'success');
+    }
+
+    function clearEmergency() {
+      allClear();
+    }
+
+    function renderPALog() {
+      const log = document.getElementById('pa-log');
+      log.innerHTML = paLog.slice(0, 10).map(entry => `
+        <div class="log-entry">
+          <strong>${entry.type.toUpperCase()}</strong> - ${new Date(entry.timestamp).toLocaleString()}
+          <br><small>${entry.text}</small>
+        </div>
+      `).join('');
+    }
+
+    // Bell functions
+    function ringBell() {
+      if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      }
+
+      // Enhanced UK school bell with 3 rings
+      const volume = document.getElementById('bell-volume').value / 100;
+      const timings = [0, 850, 1700];
+
+      timings.forEach((delay, ring) => {
+        setTimeout(() => {
+          playBellTone(volume);
+        }, delay);
+      });
+
+      paLog.unshift({
+        id: Date.now(),
+        text: 'School bell rang',
+        timestamp: new Date().toISOString(),
+        type: 'bell'
+      });
+
+      saveData();
+      renderPALog();
+    }
+
+    function playBellTone(volume) {
+      const duration = 2.2;
+      const sampleRate = audioContext.sampleRate;
+      const buffer = audioContext.createBuffer(1, duration * sampleRate, sampleRate);
+
+      const data = buffer.getChannelData(0);
+      const harmonics = [
+        { freq: 392.0, amp: 1.0 }, { freq: 784.0, amp: 0.8 }, { freq: 1174.7, amp: 0.6 },
+        { freq: 1568.0, amp: 0.4 }, { freq: 1960.0, amp: 0.3 }, { freq: 2352.0, amp: 0.2 }
+      ];
+
+      for(let i = 0; i < duration * sampleRate; i++){
+        const t = i / sampleRate;
+        let wave = 0;
+        const strike = (t < 0.02) ? Math.random() * 0.3 : 0;
+
+        harmonics.forEach(harm => {
+          const decayRate = 0.3 + (harmonics.indexOf(harm) * 0.1);
+          const envelope = Math.exp(-t * decayRate);
+          wave += Math.sin(2 * Math.PI * harm.freq * t) * harm.amp * envelope;
+        });
+
+        const attackTime = 0.01;
+        const attack = t < attackTime ? (t / attackTime) : 1;
+        const overallEnvelope = attack * Math.exp(-t * 0.2);
+
+        data[i] = (wave * 0.3 + strike) * overallEnvelope * volume;
+      }
+
+      const source = audioContext.createBufferSource();
+      source.buffer = buffer;
+      source.connect(audioContext.destination);
+      source.start(0);
+    }
+
+    function addBellTime() {
+      const time = prompt('Enter bell time (HH:MM):', '09:00');
+      if (time) {
+        bellSchedule.push({ time: time, active: true });
+        saveData();
+        renderBellSchedule();
+      }
+    }
+
+    function renderBellSchedule() {
+      const list = document.getElementById('bell-schedule-list');
+      if (bellSchedule.length === 0) {
+        list.innerHTML = '<p>No scheduled bells</p>';
+        return;
+      }
+
+      list.innerHTML = bellSchedule.map((item, index) => `
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border: 1px solid var(--border); margin: 5px 0; border-radius: 4px;">
+          <span>${item.time} ${item.active ? '(Active)' : '(Inactive)'}</span>
+          <button class="btn btn-danger" onclick="removeBellTime(${index})">Remove</button>
+        </div>
+      `).join('');
+    }
+
+    function removeBellTime(index) {
+      bellSchedule.splice(index, 1);
+      saveData();
+      renderBellSchedule();
+    }
+
+    function startBellChecker() {
+      setInterval(() => {
+        if (bellSchedule.length === 0) return;
+
+        const now = new Date();
+        const currentTime = now.getHours().toString().padStart(2, '0') + ':' +
+                           now.getMinutes().toString().padStart(2, '0');
+
+        bellSchedule.forEach(schedule => {
+          if (schedule.active && schedule.time === currentTime) {
+            ringBell();
+          }
+        });
+      }, 60000); // Check every minute
+    }
+
+    // Detentions functions
+    function renderDetentions() {
+      const tbody = document.getElementById('detention-table-body');
+      if (detentions.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--muted);">No detentions scheduled</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = detentions.map(detention => `
+        <tr>
+          <td>${detention.student}</td>
+          <td>${detention.reason}</td>
+          <td>${detention.date}</td>
+          <td>
+            <select onchange="updateDetentionStatus(${detention.id}, this.value)">
+              <option value="scheduled" ${detention.status === 'scheduled' ? 'selected' : ''}>Scheduled</option>
+              <option value="served" ${detention.status === 'served' ? 'selected' : ''}>Served</option>
+              <option value="cancelled" ${detention.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+            </select>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function updateDetentionStatus(id, status) {
+      const detention = detentions.find(d => d.id === id);
+      if (detention) {
+        detention.status = status;
+        saveData();
+        renderDetentions();
+      }
+    }
+
+    // Audio functions for emergency
+    let sirenSource = null;
+
+    function startFireSiren() {
+      if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      }
+
+      stopSiren();
+
+      const oscA = audioContext.createOscillator();
+      const oscB = audioContext.createOscillator();
+      oscA.type = 'sawtooth';
+      oscB.type = 'sine';
+      oscA.frequency.value = 900;
+      oscB.frequency.value = 1300;
+
+      const lfo = audioContext.createOscillator();
+      lfo.type = 'sine';
+      lfo.frequency.value = 0.6;
+
+      const lfoGain = audioContext.createGain();
+      lfoGain.gain.value = 300;
+      lfo.connect(lfoGain);
+      lfoGain.connect(oscA.frequency);
+      lfoGain.connect(oscB.frequency);
+
+      const gainNode = audioContext.createGain();
+      gainNode.gain.value = 0;
+      oscA.connect(gainNode);
+      oscB.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      gainNode.gain.setValueAtTime(0.0001, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(1.0, audioContext.currentTime + 0.5);
+
+      oscA.start(audioContext.currentTime);
+      oscB.start(audioContext.currentTime);
+      lfo.start(audioContext.currentTime);
+
+      sirenSource = { oscA, oscB, lfo, gainNode };
+    }
+
+    function stopSiren() {
+      if (sirenSource) {
+        const now = audioContext.currentTime;
+        sirenSource.gainNode.gain.setTargetAtTime(0.0001, now, 0.2);
+        setTimeout(() => {
+          try {
+            sirenSource.oscA.stop();
+            sirenSource.oscB.stop();
+            sirenSource.lfo.stop();
+          } catch (e) {}
+        }, 500);
+        sirenSource = null;
+      }
+    }
+
+    // Dashboard functions
+    function updateDashboard() {
+      // Attendance summary
+      const today = new Date().toISOString().split('T')[0];
+      const todayData = attendanceData[today] || {};
+      const present = Object.values(todayData).filter(status => status === 'present').length;
+      const absent = Object.values(todayData).filter(status => status === 'absent').length;
+      const late = Object.values(todayData).filter(status => status === 'late').length;
+
+      document.getElementById('attendance-summary').innerHTML = `
+        <div style="display: flex; justify-content: space-around; margin-top: 10px;">
+          <div style="text-align: center;">
+            <div style="font-size: 24px; color: var(--success);">${present}</div>
+            <div>Present</div>
+          </div>
+          <div style="text-align: center;">
+            <div style="font-size: 24px; color: var(--danger);">${absent}</div>
+            <div>Absent</div>
+          </div>
+          <div style="text-align: center;">
+            <div style="font-size: 24px; color(--warning);">${late}</div>
+            <div>Late</div>
+          </div>
+        </div>
+      `;
+
+      // Behavior summary
+      const todayIncidents = behaviorLog.filter(entry =>
+        entry.timestamp.startsWith(today)
+      ).length;
+
+      document.getElementById('behavior-summary').innerHTML = `
+        <div style="font-size: 24px; color: var(--warning); margin: 10px 0;">${todayIncidents}</div>
+        <div>Incidents today</div>
+      `;
+
+      // Recent announcements
+      const recentPA = paLog.slice(0, 3);
+      document.getElementById('announcement-log').innerHTML = recentPA.length ?
+        recentPA.map(entry => `<div style="margin: 5px 0; padding: 5px; background: #f0f0f0; border-radius: 3px;">${entry.text}</div>`).join('') :
+        'No recent announcements';
+
+      // Next bell
+      const nextBell = bellSchedule.find(schedule => schedule.active);
+      document.getElementById('bell-schedule').innerHTML = nextBell ?
+        `Next scheduled: ${nextBell.time}` :
+        'No scheduled bells';
+    }
+
+    // Utility functions
+    function showStatus(message, type) {
+      const status = document.createElement('div');
+      status.className = `status ${type}`;
+      status.textContent = message;
+      status.style.position = 'fixed';
+      status.style.top = '20px';
+      status.style.right = '20px';
+      status.style.zIndex = '1000';
+
+      document.body.appendChild(status);
+      setTimeout(() => {
+        document.body.removeChild(status);
+      }, 3000);
+    }
+
+    // Initialize everything
+    renderBehaviorLog();
+    renderPALog();
+    renderDetentions();
+  </script>
+</body>
+</html>
