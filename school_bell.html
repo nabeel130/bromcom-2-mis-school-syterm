@@ -124,7 +124,7 @@
           </div>
 
           <div style="margin-top:16px;padding:12px;background:#f0f4ff;border-radius:8px;font-size:13px;color:var(--muted)">
-            <strong>Bell Type:</strong> UK-style school chime (pleasant, clear tone)
+            <strong>Bell Type:</strong> UK high school bell (3 rings, traditional G4 tone)
           </div>
         </div>
       </div>
@@ -142,29 +142,29 @@
       document.getElementById('volumeDisplay').textContent = e.target.value;
     });
 
-    // UK-style school bell chime (musical notes)
+    // UK-style school bell chime (3 rings)
     function generateBellTone(){
-      const duration = 2; // 2 second bell tone
+      const duration = 1.5; // 1.5 second bell tone per ring
       const sampleRate = audioContext.sampleRate;
       const buffer = audioContext.createBuffer(1, duration * sampleRate, sampleRate);
       const data = buffer.getChannelData(0);
-      const volume = document.getElementById('bellVolume').value / 100 * 0.3; // cap at 0.3
+      const volume = document.getElementById('bellVolume').value / 100 * 0.4; // cap at 0.4
 
-      // Primary frequency (E4 = 329.63 Hz)
-      const freq1 = 330;
-      // Harmonic (E5 = 659.26 Hz)
-      const freq2 = 660;
-      // Sub harmonic (E3 = 164.81 Hz)
-      const freq3 = 165;
+      // Primary frequency (G4 = 392 Hz for UK school bell)
+      const freq1 = 392;
+      // Harmonic (G5 = 784 Hz)
+      const freq2 = 784;
+      // Sub harmonic (G3 = 196 Hz)
+      const freq3 = 196;
 
       for(let i = 0; i < duration * sampleRate; i++){
         const t = i / sampleRate;
-        // Decay envelope
-        const envelope = Math.exp(-t * 1.5);
+        // Decay envelope (longer decay for bell sound)
+        const envelope = Math.exp(-t * 0.8);
         // Mix frequencies with slight phasing
-        const wave = (Math.sin(2 * Math.PI * freq1 * t) * 0.5 +
+        const wave = (Math.sin(2 * Math.PI * freq1 * t) * 0.6 +
                       Math.sin(2 * Math.PI * freq2 * t) * 0.3 +
-                      Math.sin(2 * Math.PI * freq3 * t) * 0.2);
+                      Math.sin(2 * Math.PI * freq3 * t) * 0.1);
         data[i] = wave * envelope * volume;
       }
       return buffer;
@@ -172,13 +172,19 @@
 
     function playBell(){
       try{
-        const buffer = generateBellTone();
-        const source = audioContext.createBufferSource();
-        source.buffer = buffer;
-        const gainNode = audioContext.createGain();
-        gainNode.connect(audioContext.destination);
-        source.connect(gainNode);
-        source.start(0);
+        // Play 3 rings with timing like a real school bell
+        const ringInterval = 800; // milliseconds between rings
+        for(let ring = 0; ring < 3; ring++){
+          setTimeout(() => {
+            const buffer = generateBellTone();
+            const source = audioContext.createBufferSource();
+            source.buffer = buffer;
+            const gainNode = audioContext.createGain();
+            gainNode.connect(audioContext.destination);
+            source.connect(gainNode);
+            source.start(0);
+          }, ring * ringInterval);
+        }
       }catch(e){
         console.error('Bell playback error', e);
       }

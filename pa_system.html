@@ -236,6 +236,41 @@
       addToLog('alarm', type.toUpperCase() + ' triggered for ' + duration + 's');
     }
 
+    // Repeating siren for fire alarm (no auto-stop)
+    function startRepeatingSiren(type='fire'){
+      stopSiren();
+      const now = audioCtx.currentTime;
+      const oscA = audioCtx.createOscillator();
+      const oscB = audioCtx.createOscillator();
+      oscA.type = 'sawtooth'; oscB.type = 'sine';
+      oscA.frequency.value = (type==='fire')? 900 : 600;
+      oscB.frequency.value = (type==='fire')? 1300 : 900;
+
+      const lfo = audioCtx.createOscillator();
+      lfo.type = 'sine'; lfo.frequency.value = 0.6;
+      const lfoGain = audioCtx.createGain(); lfoGain.gain.value = 300;
+      lfo.connect(lfoGain);
+      lfoGain.connect(oscA.frequency);
+      lfoGain.connect(oscB.frequency);
+
+      const gainNode = audioCtx.createGain();
+      gainNode.gain.value = 0;
+      oscA.connect(gainNode); oscB.connect(gainNode);
+      gainNode.connect(masterGain);
+
+      // Fade-in only (no fade-out)
+      gainNode.gain.cancelScheduledValues(now);
+      gainNode.gain.setValueAtTime(0.0001, now);
+      gainNode.gain.exponentialRampToValueAtTime(1.0, now + 0.5);
+
+      oscA.start(now); oscB.start(now); lfo.start(now);
+
+      alarmNodes = [oscA, oscB, lfo, gainNode];
+
+      showOverlay(type + ' ALERT', 'Siren active — press ALL CLEAR or ABORT to stop');
+      addToLog('alarm', type.toUpperCase() + ' triggered (repeating until stopped)');
+    }
+
     function stopSiren(){
       if(overlayTimer){ clearTimeout(overlayTimer); overlayTimer = null; }
       if(!alarmNodes || alarmNodes.length===0) return;
@@ -280,8 +315,7 @@
       confirmThen(()=> startSiren('lockdown', dur));
     });
     document.getElementById('fireBtn').addEventListener('click', ()=>{
-      const dur = parseInt(document.getElementById('alarmDuration').value) || 15;
-      confirmThen(()=> startSiren('fire', dur));
+      confirmThen(()=> startRepeatingSiren('fire'));
     });
     document.getElementById('allClearBtn').addEventListener('click', ()=>{ stopSiren(); addToLog('info','All Clear issued'); });
     document.getElementById('abortBtn').addEventListener('click', ()=>{ stopSiren(); addToLog('info','Abort issued'); });
@@ -385,7 +419,7 @@
     // Keyboard shortcuts: L = lockdown, F = fire, S = stop
     window.addEventListener('keydown', (e)=>{
       if(e.key==='L' || e.key==='l'){ confirmThen(()=> startSiren('lockdown', parseInt(document.getElementById('alarmDuration').value)||15)); }
-      if(e.key==='F' || e.key==='f'){ confirmThen(()=> startSiren('fire', parseInt(document.getElementById('alarmDuration').value)||15)); }
+      if(e.key==='F' || e.key==='f'){ confirmThen(()=> startRepeatingSiren('fire')); }
       if(e.key==='S' || e.key==='s'){ stopSiren(); }
     });
 

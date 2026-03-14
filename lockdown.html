@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Lockdown Alert — MIS Emergency</title>
+  <title>Evacuation Alert — MIS Emergency</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
     :root{
@@ -200,20 +200,20 @@
   <div class="lockdown-page">
     <div class="lockdown-container">
       <i class="fas fa-lock alert-icon"></i>
-      <h1>LOCKDOWN</h1>
+      <h1>EVACUATION</h1>
       <div class="status" id="statusText">System Ready</div>
       <div class="status-badge" id="statusBadge" style="background:#4ade80;color:#1a1a1a">ALL CLEAR</div>
 
       <div class="info">
-        <p><strong>Emergency Lockdown System</strong></p>
-        <p>Activating lockdown will trigger school-wide alert. Use only in genuine emergency.</p>
+        <p><strong>Emergency Evacuation System</strong></p>
+        <p>Activating evacuation will trigger school-wide alert. Use only in genuine emergency.</p>
         <p id="timestamp"></p>
       </div>
 
       <div class="timer" id="timerDisplay"></div>
 
       <div class="controls">
-        <button class="btn activate" id="activateBtn" onclick="activateLockdown()">🚨 ACTIVATE LOCKDOWN</button>
+        <button class="btn activate" id="activateBtn" onclick="activateLockdown()">🚨 ACTIVATE EVACUATION</button>
         <button class="btn reset" id="resetBtn" onclick="resetLockdown()" style="display:none">RESET SYSTEM</button>
       </div>
 
@@ -244,15 +244,15 @@
     function activateLockdown(){
       if(isLocked) return;
       
-      const confirmed = confirm('⚠️ CONFIRM: Activate LOCKDOWN? This will trigger school-wide alert.');
+      const confirmed = confirm('⚠️ CONFIRM: Activate EVACUATION? This will trigger school-wide alert.');
       if(!confirmed) return;
 
       isLocked = true;
       lockStart = new Date();
       
       // Visual changes
-      document.getElementById('statusText').textContent = '🚨 LOCKDOWN ACTIVE';
-      document.getElementById('statusBadge').innerHTML = '🚨 LOCKDOWN ACTIVE';
+      document.getElementById('statusText').textContent = '🚨 EVACUATION ACTIVE';
+      document.getElementById('statusBadge').innerHTML = '🚨 EVACUATION ACTIVE';
       document.getElementById('statusBadge').className = 'status-badge active';
       document.getElementById('activateBtn').style.display = 'none';
       document.getElementById('resetBtn').style.display = 'inline-block';
@@ -261,10 +261,10 @@
       playAlert();
       
       // Log
-      log('🚨 LOCKDOWN ACTIVATED');
+      log('🚨 EVACUATION ACTIVATED');
       
       // Speech announcement
-      const msg = new SpeechSynthesisUtterance('ATTENTION. ATTENTION. LOCKDOWN ACTIVATED. SECURE ALL PREMISES. THIS IS NOT A DRILL.');
+      const msg = new SpeechSynthesisUtterance('Attention please. This is an evacuation notice. All students and staff must leave the building immediately using the nearest safe exit. Teachers, take your class roster and lead students to the designated assembly area. Do not re-enter the building until the all-clear is given.');
       msg.rate = 1.2;
       msg.pitch = 1;
       speechSynthesis.speak(msg);
@@ -273,7 +273,7 @@
       startTimer();
       
       // Auto-broadcast to other pages via localStorage
-      localStorage.setItem('_lockdown_status', JSON.stringify({
+      localStorage.setItem('_evacuation_status', JSON.stringify({
         active: true,
         time: lockStart.toISOString()
       }));
@@ -293,10 +293,10 @@
       document.getElementById('resetBtn').style.display = 'none';
       document.getElementById('timerDisplay').textContent = '';
       
-      log('✅ Lockdown reset by user');
+      log('✅ Evacuation reset by user');
       
       // Clear broadcast
-      localStorage.removeItem('_lockdown_status');
+      localStorage.removeItem('_evacuation_status');
     }
 
     function playAlert(){
@@ -337,12 +337,12 @@
       document.getElementById('timestamp').textContent = now.toLocaleString();
     }, 1000);
 
-    // Listen for lockdown broadcast from other tabs
+    // Listen for evacuation broadcast from other tabs
     window.addEventListener('storage', (e)=>{
-      if(e.key === '_lockdown_status' && e.newValue){
+      if(e.key === '_evacuation_status' && e.newValue){
         const status = JSON.parse(e.newValue);
         if(status.active){
-          log('🔔 Lockdown activated from another source');
+          log('🔔 Evacuation activated from another source');
           // Optional: auto-activate visually
         }
       }
