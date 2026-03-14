@@ -124,7 +124,7 @@
           </div>
 
           <div style="margin-top:16px;padding:12px;background:#f0f4ff;border-radius:8px;font-size:13px;color:var(--muted)">
-            <strong>Bell Type:</strong> UK high school bell (3 rings, traditional G4 tone)
+            <strong>Bell Type:</strong> Enhanced UK high school bell (3 rings, rich harmonics, authentic strike sound)
           </div>
         </div>
       </div>
@@ -142,49 +142,74 @@
       document.getElementById('volumeDisplay').textContent = e.target.value;
     });
 
-    // UK-style school bell chime (3 rings)
+    // Enhanced UK school bell with realistic harmonics and strike sound
     function generateBellTone(){
-      const duration = 1.5; // 1.5 second bell tone per ring
+      const duration = 2.2; // Longer duration for better decay
       const sampleRate = audioContext.sampleRate;
       const buffer = audioContext.createBuffer(1, duration * sampleRate, sampleRate);
       const data = buffer.getChannelData(0);
-      const volume = document.getElementById('bellVolume').value / 100 * 0.4; // cap at 0.4
+      const volume = document.getElementById('bellVolume').value / 100 * 0.5;
 
-      // Primary frequency (G4 = 392 Hz for UK school bell)
-      const freq1 = 392;
-      // Harmonic (G5 = 784 Hz)
-      const freq2 = 784;
-      // Sub harmonic (G3 = 196 Hz)
-      const freq3 = 196;
+      // Authentic UK school bell frequencies (G4 fundamental with rich harmonics)
+      const harmonics = [
+        { freq: 392.0, amp: 1.0 },    // G4 fundamental
+        { freq: 784.0, amp: 0.8 },    // G5 octave
+        { freq: 1174.7, amp: 0.6 },   // G5 + major sixth
+        { freq: 1568.0, amp: 0.4 },   // G6 double octave
+        { freq: 1960.0, amp: 0.3 },   // G6 + fifth
+        { freq: 2352.0, amp: 0.2 },   // G6 + major ninth
+        { freq: 2744.0, amp: 0.15 },  // Higher harmonics
+        { freq: 3136.0, amp: 0.1 }
+      ];
 
       for(let i = 0; i < duration * sampleRate; i++){
         const t = i / sampleRate;
-        // Decay envelope (longer decay for bell sound)
-        const envelope = Math.exp(-t * 0.8);
-        // Mix frequencies with slight phasing
-        const wave = (Math.sin(2 * Math.PI * freq1 * t) * 0.6 +
-                      Math.sin(2 * Math.PI * freq2 * t) * 0.3 +
-                      Math.sin(2 * Math.PI * freq3 * t) * 0.1);
-        data[i] = wave * envelope * volume;
+        let wave = 0;
+
+        // Strike sound (sharp attack at beginning)
+        const strike = (t < 0.02) ? Math.random() * 0.3 : 0;
+
+        // Bell harmonics with individual decay rates
+        harmonics.forEach((harm, index) => {
+          const decayRate = 0.3 + (index * 0.1); // Different decay for each harmonic
+          const envelope = Math.exp(-t * decayRate);
+          wave += Math.sin(2 * Math.PI * harm.freq * t) * harm.amp * envelope;
+        });
+
+        // Add some inharmonic partials for realism
+        wave += Math.sin(2 * Math.PI * 415.3 * t) * 0.2 * Math.exp(-t * 0.5); // Slightly detuned
+        wave += Math.sin(2 * Math.PI * 369.99 * t) * 0.15 * Math.exp(-t * 0.6); // F#4
+
+        // Overall envelope with attack
+        const attackTime = 0.01;
+        const attack = t < attackTime ? (t / attackTime) : 1;
+        const overallEnvelope = attack * Math.exp(-t * 0.2);
+
+        data[i] = (wave * 0.3 + strike) * overallEnvelope * volume;
       }
       return buffer;
     }
 
     function playBell(){
       try{
-        // Play 3 rings with timing like a real school bell
-        const ringInterval = 800; // milliseconds between rings
-        for(let ring = 0; ring < 3; ring++){
+        // Play 3 rings with authentic school bell timing
+        const timings = [0, 850, 1700]; // More realistic spacing
+        timings.forEach((delay, ring) => {
           setTimeout(() => {
             const buffer = generateBellTone();
             const source = audioContext.createBufferSource();
             source.buffer = buffer;
             const gainNode = audioContext.createGain();
+
+            // Add slight volume variation for realism
+            const variation = 0.9 + Math.random() * 0.2;
+            gainNode.gain.value = variation;
+
             gainNode.connect(audioContext.destination);
             source.connect(gainNode);
             source.start(0);
-          }, ring * ringInterval);
-        }
+          }, delay);
+        });
       }catch(e){
         console.error('Bell playback error', e);
       }
