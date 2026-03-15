@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MIS School Management System</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <div class="header">
+      <h1><i class="fas fa-school"></i> MIS School Management System</h1>
+      <p>Complete school administration solution</p>
+    </div>
+
+    <nav class="nav">
+      <button class="nav-btn active" onclick="showPage('dashboard')">Dashboard</button>
+      <button class="nav-btn" onclick="showPage('attendance')">Attendance</button>
+      <button class="nav-btn" onclick="showPage('behavior')">Behavior</button>
+      <button class="nav-btn" onclick="showPage('pa')">PA System</button>
+      <button class="nav-btn" onclick="showPage('bell')">School Bell</button>
+      <button class="nav-btn" onclick="showPage('emergency')">Emergency</button>
+      <button class="nav-btn" onclick="showPage('detentions')">Detentions</button>
+    </nav>
+
+    <!-- Dashboard Page -->
+    <div id="dashboard" class="page active">
+      <div class="grid">
+        <div class="card">
+          <h3><i class="fas fa-users"></i> Today's Attendance</h3>
+          <div id="attendance-summary">Loading...</div>
+        </div>
+        <div class="card">
+          <h3><i class="fas fa-exclamation-triangle"></i> Behavior Incidents</h3>
+          <div id="behavior-summary">Loading...</div>
+        </div>
+        <div class="card">
+          <h3><i class="fas fa-bullhorn"></i> Recent Announcements</h3>
+          <div id="announcement-log">No recent announcements</div>
+        </div>
+        <div class="card">
+          <h3><i class="fas fa-clock"></i> Next Bell</h3>
+          <div id="bell-schedule">No scheduled bells</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Attendance Page -->
+    <div id="attendance" class="page">
+      <div class="card">
+        <h3><i class="fas fa-check-circle"></i> Attendance Register</h3>
+        <div class="form-group">
+          <label>Class:</label>
+          <select id="class-select">
+            <option value="5-maple">5 Maple</option>
+            <option value="6-oak">6 Oak</option>
+          </select>
+        </div>
+        <div class="attendance-grid" id="attendance-grid"></div>
+        <div style="margin-top: 20px;">
+          <button class="btn btn-success" onclick="saveAttendance()">Save Attendance</button>
+          <button class="btn btn-primary" onclick="exportAttendance()">Export Report</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Behavior Page -->
+    <div id="behavior" class="page">
+      <div class="card">
+        <h3><i class="fas fa-exclamation-triangle"></i> Behavior Register</h3>
+        <div class="form-group">
+          <label>Student:</label>
+          <select id="behavior-student">
+            <option value="">Select student...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Incident Type:</label>
+          <select id="behavior-code">
+            <option value="1">1 - Minor disruption</option>
+            <option value="2">2 - Talking out of turn</option>
+            <option value="3">3 - Physical contact</option>
+            <option value="4">4 - Defiance</option>
+            <option value="5">5 - Serious incident</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Description:</label>
+          <textarea id="behavior-description" rows="3"></textarea>
+        </div>
+        <button class="btn btn-warning" onclick="logBehavior()">Log Incident</button>
+      </div>
+
+      <div class="card">
+        <h3>Recent Incidents</h3>
+        <div id="behavior-log" class="log"></div>
+      </div>
+    </div>
+
+    <!-- PA System Page -->
+    <div id="pa" class="page">
+      <div class="card">
+        <h3><i class="fas fa-bullhorn"></i> Public Address System</h3>
+        <div class="form-group">
+          <label>Announcement:</label>
+          <textarea id="pa-text" rows="4" placeholder="Type your announcement..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Voice Settings:</label>
+          <input type="range" id="pa-volume" min="0" max="100" value="80"> Volume
+          <input type="range" id="pa-rate" min="0.5" max="1.5" step="0.1" value="1"> Speed
+        </div>
+        <button class="btn btn-primary" onclick="makeAnnouncement()">Make Announcement</button>
+      </div>
+
+      <div class="card">
+        <h3>Emergency Controls</h3>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button class="btn btn-danger" onclick="triggerLockdown()">🚨 EVACUATION</button>
+          <button class="btn btn-danger" onclick="triggerFireAlarm()">🔥 FIRE ALARM</button>
+          <button class="btn btn-success" onclick="allClear()">✅ ALL CLEAR</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Announcement Log</h3>
+        <div id="pa-log" class="log"></div>
+      </div>
+    </div>
+
+    <!-- School Bell Page -->
+    <div id="bell" class="page">
+      <div class="card">
+        <h3><i class="fas fa-bell"></i> School Bell System</h3>
+        <div class="bell-controls">
+          <button class="btn btn-primary bell-button" onclick="ringBell()">
+            <i class="fas fa-bell"></i> Ring Bell Now
+          </button>
+          <div>
+            <label>Volume:</label>
+            <input type="range" id="bell-volume" min="0" max="100" value="70">
+          </div>
+        </div>
+        <p style="margin-top: 10px; color: var(--muted);">
+          <strong>Bell Type:</strong> Enhanced UK high school bell (3 rings, rich harmonics, authentic strike sound)
+        </p>
+      </div>
+
+      <div class="card">
+        <h3>Bell Schedule</h3>
+        <div id="bell-schedule-list"></div>
+        <button class="btn btn-primary" onclick="addBellTime()">Add Scheduled Bell</button>
+      </div>
+    </div>
+
+    <!-- Emergency Page -->
+    <div id="emergency" class="page">
+      <div class="emergency-alert" id="emergency-alert" style="display: none;">
+        <h2>🚨 EMERGENCY ALERT ACTIVE</h2>
+        <p id="emergency-message"></p>
+        <button class="btn btn-success" onclick="clearEmergency()">Clear Alert</button>
+      </div>
+
+      <div class="card">
+        <h3><i class="fas fa-shield-alt"></i> Emergency Procedures</h3>
+        <div style="display: grid; gap: 15px;">
+          <div style="padding: 15px; border: 2px solid var(--danger); border-radius: 6px;">
+            <h4>🔥 Fire Emergency</h4>
+            <p>Evacuate building immediately using nearest safe exit. Teachers lead students to assembly area.</p>
+          </div>
+          <div style="padding: 15px; border: 2px solid var(--warning); border-radius: 6px;">
+            <h4>🚨 Lockdown</h4>
+            <p>Secure all premises. Lock doors, turn off lights, remain quiet away from windows.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detentions Page -->
+    <div id="detentions" class="page">
+      <div class="card">
+        <h3><i class="fas fa-ban"></i> Detention Management</h3>
+        <div id="detention-list">
+          <table>
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Reason</th>
+                <th>Date</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="detention-table-body">
+              <tr>
+                <td colspan="4" style="text-align: center; color: var(--muted);">No detentions scheduled</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

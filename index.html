@@ -1,91 +1,490 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>MIS School — Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mosque PA System - Advanced Islamic Public Address</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <style>
-    :root{--bg:#071028;--card:#071827;--accent:#7b61ff;--muted:#9fb0c8}
-    *{box-sizing:border-box}
-    body{margin:0;background:linear-gradient(180deg,#071028,#0b1a2a);font-family:Inter,Segoe UI,Arial;color:#e6f2ff}
-    .wrap{max-width:960px;margin:40px auto;padding:24px}
-    .hero{display:flex;align-items:center;gap:18px}
-    .logo{width:64px;height:64px;border-radius:12px;background:linear-gradient(90deg,#6dd3ff,#7b61ff);display:flex;align-items:center;justify-content:center;color:#04202a;font-weight:800}
-    h1{margin:0;font-size:22px}
-    .sub{color:var(--muted);margin-top:6px}
-
-    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:24px}
-    .card{background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
-    .card h3{margin:0 0 8px 0}
-    .link{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;padding:10px;border-radius:8px}
-    .muted{color:var(--muted);font-size:13px}
-
-    footer{margin-top:28px;color:var(--muted);font-size:13px;text-align:center}
-    @media(max-width:760px){.grid{grid-template-columns:1fr}}
-  </style>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="wrap">
-    <div class="hero">
-      <div class="logo"><i class="fas fa-school"></i></div>
-      <div>
-        <h1>MIS School — Dashboard</h1>
-        <div class="sub">Quick access to Attendance, Behaviour, PA system and School Bell</div>
+  <div class="app">
+    <div class="header">
+      <h1><i class="fas fa-mosque"></i> Mosque PA System</h1>
+      <p>Advanced Islamic Public Address System with Authentic Adhan</p>
+    </div>
+
+    <nav class="nav">
+      <button class="nav-btn active" onclick="showPage('dashboard')">Dashboard</button>
+      <button class="nav-btn" onclick="showPage('pa')">PA System</button>
+      <button class="nav-btn" onclick="showPage('bell')">Mosque Bell</button>
+      <button class="nav-btn" onclick="showPage('emergency')">Emergency</button>
+    </nav>
+
+    <!-- Dashboard Page -->
+    <div id="dashboard" class="page active">
+      <div class="grid">
+        <div class="card">
+          <h3><i class="fas fa-clock"></i> Prayer Times</h3>
+          <div id="prayer-times">Loading prayer times...</div>
+        </div>
+        <div class="card">
+          <h3><i class="fas fa-bullhorn"></i> Recent Announcements</h3>
+          <div id="announcement-log">No recent announcements</div>
+        </div>
+        <div class="card">
+          <h3><i class="fas fa-bell"></i> Next Adhan</h3>
+          <div id="bell-schedule">No scheduled adhan</div>
+        </div>
+        <div class="card">
+          <h3><i class="fas fa-calendar-alt"></i> Islamic Calendar</h3>
+          <div id="islamic-calendar">Loading Islamic date...</div>
+        </div>
       </div>
     </div>
 
-    <div class="grid">
-      <a class="card link" href="/teacher_attendance.html">
-        <div><i class="fas fa-check-circle" style="font-size:22px;color:#6dd3ff"></i></div>
-        <div>
-          <h3>Attendance Register</h3>
-          <div class="muted">Take and export registers, lates & detention</div>
-        </div>
-      </a>
+    <!-- PA System Page -->
+    <div id="pa" class="page">
+      <div class="card">
+        <h3><i class="fas fa-bullhorn"></i> Advanced Public Address System</h3>
 
-      <a class="card link" href="/behavior_register.html">
-        <div><i class="fas fa-exclamation-triangle" style="font-size:22px;color:#ffb86b"></i></div>
-        <div>
-          <h3>Behaviour Register</h3>
-          <div class="muted">5‑code behaviour tracking with detention logic</div>
+        <!-- Announcement Composer -->
+        <div class="form-group">
+          <label>Announcement Type:</label>
+          <select id="announcement-type" onchange="updateAnnouncementTemplates()">
+            <option value="custom">Custom Announcement</option>
+            <option value="fajr">🕌 Fajr Prayer</option>
+            <option value="dhuhr">🕌 Dhuhr Prayer</option>
+            <option value="asr">🕌 Asr Prayer</option>
+            <option value="maghrib">🕌 Maghrib Prayer</option>
+            <option value="isha">🕌 Isha Prayer</option>
+            <option value="azan">🕌 Azan Call</option>
+            <option value="jummah">🕌 Jummah Prayer</option>
+            <option value="iftar">🌙 Iftar Time</option>
+            <option value="sehar">🌙 Sehri Time</option>
+            <option value="eid">� Eid Celebration</option>
+            <option value="ramadan">🌙 Ramadan Reminder</option>
+            <option value="quran">� Quran Recitation</option>
+            <option value="islamic-studies">📚 Islamic Studies</option>
+            <option value="assembly">🏛️ Islamic Assembly</option>
+            <option value="sports">⚽ Sports Activity</option>
+            <option value="exam">📝 Islamic Exam</option>
+            <option value="holiday">🏖️ Islamic Holiday</option>
+          </select>
         </div>
-      </a>
 
-      <a class="card link" href="/detentions.html">
-        <div><i class="fas fa-ban" style="font-size:22px;color:#ff5252"></i></div>
-        <div>
-          <h3>Detentions List</h3>
-          <div class="muted">View and manage student detentions from all sources</div>
+        <div class="form-group">
+          <label>Announcement Text:</label>
+          <textarea id="pa-text" rows="4" placeholder="Type your announcement..."></textarea>
         </div>
-      </a>
 
-      <a class="card link" href="/pa_system.html">
-        <div><i class="fas fa-bullhorn" style="font-size:22px;color:#7b61ff"></i></div>
-        <div>
-          <h3>PA System</h3>
-          <div class="muted">Modern PA with sirens, TTS, presets and roster</div>
+        <!-- Voice Settings -->
+        <div class="form-group">
+          <label>Voice Settings:</label>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-top: 10px;">
+            <div>
+              <label for="pa-volume">Volume:</label>
+              <input type="range" id="pa-volume" min="0" max="100" value="80">
+            </div>
+            <div>
+              <label for="pa-rate">Speed:</label>
+              <input type="range" id="pa-rate" min="0.5" max="1.5" step="0.1" value="1">
+            </div>
+            <div>
+              <label for="pa-pitch">Pitch:</label>
+              <input type="range" id="pa-pitch" min="0" max="2" step="0.1" value="1">
+            </div>
+          </div>
         </div>
-      </a>
 
-      <a class="card link" href="/school_bell.html">
-        <div><i class="fas fa-bell" style="font-size:22px;color:#ffd166"></i></div>
-        <div>
-          <h3>School Bell</h3>
-          <div class="muted">Bell schedules and manual ring</div>
+        <!-- Voice Selection -->
+        <div class="form-group">
+          <label>Voice:</label>
+          <select id="pa-voice"></select>
+          <div style="margin-top: 10px; display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px;">
+            <label style="display: flex; align-items: center; gap: 5px;">
+              <input type="checkbox" id="pa-male-voice" checked> 👨 Male Voice (preferred)
+            </label>
+            <label style="display: flex; align-items: center; gap: 5px;">
+              <input type="checkbox" id="pa-echo"> 🔊 Echo Effect
+            </label>
+            <label style="display: flex; align-items: center; gap: 5px;">
+              <input type="checkbox" id="pa-reverb"> 🌍 Reverb
+            </label>
+            <label style="display: flex; align-items: center; gap: 5px;">
+              <input type="checkbox" id="pa-compress"> 🎚️ Compressor
+            </label>
+            <label style="display: flex; align-items: center; gap: 5px;">
+              <input type="checkbox" id="pa-equalizer"> 🎛️ Equalizer
+            </label>
+          </div>
         </div>
-      </a>
 
-      <a class="card link" href="/lockdown.html" style="background:linear-gradient(180deg,rgba(255,82,82,0.05),rgba(255,82,82,0.02));border:2px solid rgba(255,82,82,0.3)">
-        <div><i class="fas fa-lock" style="font-size:22px;color:#ff5252"></i></div>
-        <div>
-          <h3>🚨 Lockdown Alert</h3>
-          <div class="muted">Emergency lockdown system — emergency use only</div>
+        <!-- Priority Level -->
+        <div class="form-group">
+          <label>Priority Level:</label>
+          <select id="pa-priority">
+            <option value="normal">Normal</option>
+            <option value="urgent">Urgent</option>
+            <option value="emergency">Emergency</option>
+          </select>
         </div>
-      </a>
+
+        <!-- Control Buttons -->
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px;">
+          <button class="btn btn-primary" onclick="makeAnnouncement()">
+            <i class="fas fa-volume-up"></i> Make Announcement
+          </button>
+          <button class="btn btn-secondary" onclick="previewAnnouncement()">
+            <i class="fas fa-play-circle"></i> Preview
+          </button>
+          <button class="btn btn-info" onclick="scheduleAnnouncement()">
+            <i class="fas fa-clock"></i> Schedule
+          </button>
+          <button class="btn btn-warning" onclick="saveAnnouncement()">
+            <i class="fas fa-save"></i> Save Template
+          </button>
+          <button class="btn btn-success" onclick="testAllVoices()">
+            <i class="fas fa-microphone-alt"></i> Test Voices
+          </button>
+          <button class="btn btn-dark" onclick="clearAnnouncementQueue()">
+            <i class="fas fa-trash"></i> Clear Queue
+          </button>
+        </div>
+
+        <!-- Announcement Queue Status -->
+        <div class="form-group" id="queue-status" style="display: none; margin-top: 15px; padding: 10px; background: var(--card); border-radius: 4px; border: 1px solid var(--border);">
+          <strong>📋 Announcement Queue:</strong>
+          <div id="queue-list" style="margin-top: 8px;"></div>
+        </div>
+
+        <!-- Audio Recording -->
+        <div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border); padding-top: 15px;">
+          <label>Audio Recording:</label>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <button class="btn btn-secondary" id="record-btn" onclick="startRecording()">
+              <i class="fas fa-microphone"></i> Record
+            </button>
+            <button class="btn btn-danger" id="stop-record-btn" onclick="stopRecording()" style="display: none;">
+              <i class="fas fa-stop"></i> Stop
+            </button>
+            <button class="btn btn-success" id="play-recording-btn" onclick="playRecording()" style="display: none;">
+              <i class="fas fa-play"></i> Play Recording
+            </button>
+            <span id="recording-status" style="font-size: 14px; color: var(--muted);">Ready to record</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scheduled Announcements -->
+      <div class="card">
+        <h3><i class="fas fa-calendar-alt"></i> Scheduled Announcements</h3>
+        <div id="scheduled-announcements" style="margin-bottom: 15px;"></div>
+        <button class="btn btn-primary" onclick="showScheduleModal()">Add Scheduled Announcement</button>
+      </div>
+
+      <!-- Emergency Controls -->
+      <div class="card">
+        <h3><i class="fas fa-shield-alt"></i> Emergency Controls</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px;">
+          <button class="btn btn-danger" onclick="triggerLockdown()">
+            <i class="fas fa-running"></i><br>EVACUATION
+          </button>
+          <button class="btn btn-danger" onclick="triggerFireAlarm()">
+            <i class="fas fa-fire"></i><br>FIRE ALARM
+          </button>
+          <button class="btn btn-warning" onclick="triggerLockdownDrill()">
+            <i class="fas fa-user-shield"></i><br>LOCKDOWN DRILL
+          </button>
+          <button class="btn btn-warning" onclick="triggerSevereWeather()">
+            <i class="fas fa-cloud-showers-heavy"></i><br>WEATHER ALERT
+          </button>
+          <button class="btn btn-info" onclick="triggerMedicalEmergency()">
+            <i class="fas fa-ambulance"></i><br>MEDICAL ALERT
+          </button>
+          <button class="btn btn-danger" onclick="triggerTerroristThreat()">
+            <i class="fas fa-exclamation-triangle"></i><br>SECURITY THREAT
+          </button>
+          <button class="btn btn-warning" onclick="triggerEarthquake()">
+            <i class="fas fa-house-damage"></i><br>EARTHQUAKE
+          </button>
+          <button class="btn btn-info" onclick="triggerPowerOutage()">
+            <i class="fas fa-plug"></i><br>POWER OUTAGE
+          </button>
+          <button class="btn btn-success" onclick="allClear()">
+            <i class="fas fa-check-circle"></i><br>ALL CLEAR
+          </button>
+        </div>
+
+        <!-- Emergency Quick Actions -->
+        <div style="margin-top: 15px; padding: 10px; background: #f0f8ff; border-radius: 4px; border: 1px solid #add8e6;">
+          <strong>⚡ Quick Emergency Actions:</strong>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;">
+            <button class="btn btn-sm btn-danger" onclick="quickEvacuation()">🚨 Quick Evacuation</button>
+            <button class="btn btn-sm btn-warning" onclick="quickLockdown()">🔒 Quick Lockdown</button>
+            <button class="btn btn-sm btn-info" onclick="quickMedical()">🚑 Quick Medical</button>
+            <button class="btn btn-sm btn-success" onclick="quickAllClear()">✅ Quick All Clear</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Announcement Templates -->
+      <div class="card">
+        <h3><i class="fas fa-bookmark"></i> Saved Templates</h3>
+        <div id="announcement-templates"></div>
+      </div>
+
+      <!-- Announcement Log -->
+      <div class="card">
+        <h3><i class="fas fa-history"></i> Announcement Log</h3>
+        <div id="pa-log" class="log"></div>
+        <button class="btn btn-secondary" onclick="exportAnnouncementLog()" style="margin-top: 10px;">
+          <i class="fas fa-download"></i> Export Log
+        </button>
+      </div>
     </div>
 
-    <footer>Hosted locally — open <code>http://localhost:4000</code> to view</footer>
+    <!-- Schedule Announcement Modal -->
+    <div id="schedule-modal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Schedule Announcement</h3>
+          <span class="modal-close" onclick="closeScheduleModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Announcement Text:</label>
+            <textarea id="schedule-text" rows="3" placeholder="Enter announcement..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>Schedule Date & Time:</label>
+            <input type="datetime-local" id="schedule-datetime">
+          </div>
+          <div class="form-group">
+            <label>Repeat:</label>
+            <select id="schedule-repeat">
+              <option value="once">Once</option>
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="weekdays">Weekdays Only</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeScheduleModal()">Cancel</button>
+          <button class="btn btn-primary" onclick="saveScheduledAnnouncement()">Schedule</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- School Bell Page -->
+    <div id="bell" class="page">
+      <div class="card">
+        <h3><i class="fas fa-bell"></i> Advanced School Bell System</h3>
+        <div class="bell-controls">
+          <button class="btn btn-primary bell-button" onclick="ringBell()">
+            <i class="fas fa-bell"></i> Ring Bell Now
+          </button>
+          <div style="display: flex; gap: 20px; align-items: center; margin-top: 15px;">
+            <div>
+              <label for="bell-volume">Volume:</label>
+              <input type="range" id="bell-volume" min="0" max="100" value="80" onchange="updateBellVolume()">
+            </div>
+            <div>
+              <label for="bell-type">Bell Type:</label>
+              <select id="bell-type" onchange="changeBellType()">
+                <option value="mosque" selected>Mosque Adhan Call</option>
+                <option value="school">Traditional School Bell</option>
+                <option value="modern">Modern Electronic Bell</option>
+                <option value="fire">Fire Alarm</option>
+                <option value="gong">Temple Gong</option>
+              </select>
+            </div>
+            <div>
+              <label for="bell-pattern">Pattern:</label>
+              <select id="bell-pattern">
+                <option value="single">Single Ring</option>
+                <option value="double">Double Ring</option>
+                <option value="triple" selected>Triple Ring</option>
+                <option value="continuous">Continuous</option>
+              </select>
+            </div>
+          </div>
+          <div id="bell-visual" style="margin-top: 20px; text-align: center; font-size: 48px; color: var(--muted);">🔔</div>
+        </div>
+        <p style="margin-top: 10px; color: var(--muted);" id="bell-description">
+          <strong>Current Bell:</strong> Traditional School Bell (authentic harmonics, clear tone, 3.0s duration, triple ring pattern)
+        </p>
+      </div>
+
+      <div class="card">
+        <h3>Bell Schedule</h3>
+        <div id="bell-schedule-list"></div>
+        <button class="btn btn-primary" onclick="addBellTime()">Add Scheduled Bell</button>
+        <button class="btn btn-secondary" onclick="testBellSchedule()" style="margin-left: 10px;">Test Schedule</button>
+      </div>
+    </div>
+
+    <!-- Emergency Page -->
+    <div id="emergency" class="page">
+      <div class="emergency-alert" id="emergency-alert" style="display: none;">
+        <h2>🚨 EMERGENCY ALERT ACTIVE</h2>
+        <p id="emergency-message"></p>
+        <button class="btn btn-success" onclick="clearEmergency()">Clear Alert</button>
+      </div>
+
+      <div class="card">
+        <h3><i class="fas fa-shield-alt"></i> Emergency Procedures</h3>
+        <div style="display: grid; gap: 15px;">
+          <div style="padding: 15px; border: 2px solid var(--danger); border-radius: 6px;">
+            <h4>🔥 Fire Emergency</h4>
+            <p>Evacuate building immediately using nearest safe exit. Teachers lead students to assembly area.</p>
+          </div>
+          <div style="padding: 15px; border: 2px solid var(--warning); border-radius: 6px;">
+            <h4>🚨 Lockdown</h4>
+            <p>Secure all premises. Lock doors, turn off lights, remain quiet away from windows.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3><i class="fas fa-history"></i> Emergency Messages History</h3>
+        <div id="emergency-log" class="log" style="max-height: 300px; overflow-y: auto;">
+          <p style="color: var(--muted); text-align: center;">No emergency messages sent yet</p>
+        </div>
+        <button class="btn btn-secondary" onclick="clearEmergencyLog()" style="margin-top: 10px;">Clear History</button>
+      </div>
+    </div>
+
+    <!-- Detentions Page -->
+    <div id="detentions" class="page">
+      <div class="card">
+        <h3><i class="fas fa-ban"></i> Detention Management</h3>
+        <div id="detention-list">
+          <table>
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Reason</th>
+                <th>Date</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="detention-table-body">
+              <tr>
+                <td colspan="4" style="text-align: center; color: var(--muted);">No detentions scheduled</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Assessments Page -->
+    <div id="assessments" class="page">
+      <div class="card">
+        <h3><i class="fas fa-graduation-cap"></i> Assessment & Progress Tracking</h3>
+        <div class="form-group">
+          <label>Subject:</label>
+          <select id="assessment-subject">
+            <option value="">Select subject...</option>
+            <option value="math">Mathematics</option>
+            <option value="english">English</option>
+            <option value="science">Science</option>
+            <option value="history">History</option>
+            <option value="geography">Geography</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Assessment Type:</label>
+          <select id="assessment-type">
+            <option value="test">Test</option>
+            <option value="quiz">Quiz</option>
+            <option value="coursework">Coursework</option>
+            <option value="exam">Exam</option>
+            <option value="homework">Homework</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="openAssessmentModal()">Record Assessment</button>
+      </div>
+
+      <div class="card">
+        <h3>Recent Assessments</h3>
+        <div id="assessment-log" class="log">No assessments recorded yet</div>
+      </div>
+    </div>
+
+    <!-- Timetable Page -->
+    <div id="timetable" class="page">
+      <div class="card">
+        <h3><i class="fas fa-calendar-alt"></i> School Timetable</h3>
+        <div class="form-group">
+          <label>Class:</label>
+          <select id="timetable-class">
+            <option value="5-maple">5 Maple</option>
+            <option value="6-oak">6 Oak</option>
+          </select>
+        </div>
+        <div id="timetable-display">
+          <table>
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Monday</th>
+                <th>Tuesday</th>
+                <th>Wednesday</th>
+                <th>Thursday</th>
+                <th>Friday</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>9:00-10:00</td><td>Math</td><td>English</td><td>Science</td><td>History</td><td>PE</td></tr>
+              <tr><td>10:00-11:00</td><td>English</td><td>Math</td><td>History</td><td>Science</td><td>Art</td></tr>
+              <tr><td>11:00-12:00</td><td>Science</td><td>Science</td><td>English</td><td>Math</td><td>Music</td></tr>
+              <tr><td>12:00-13:00</td><td>Lunch</td><td>Lunch</td><td>Lunch</td><td>Lunch</td><td>Lunch</td></tr>
+              <tr><td>13:00-14:00</td><td>History</td><td>Geography</td><td>Math</td><td>English</td><td>Science</td></tr>
+              <tr><td>14:00-15:00</td><td>PE</td><td>Art</td><td>Geography</td><td>PE</td><td>History</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reports Page -->
+    <div id="reports" class="page">
+      <div class="card">
+        <h3><i class="fas fa-chart-bar"></i> School Reports & Analytics</h3>
+        <div class="grid">
+          <div class="form-group">
+            <label>Report Type:</label>
+            <select id="report-type">
+              <option value="attendance">Attendance Report</option>
+              <option value="behavior">Behavior Report</option>
+              <option value="assessments">Assessment Report</option>
+              <option value="detentions">Detention Report</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Time Period:</label>
+            <select id="report-period">
+              <option value="today">Today</option>
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+              <option value="term">This Term</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="generateReport()">Generate Report</button>
+        <button class="btn btn-success" onclick="exportReport()">Export to CSV</button>
+      </div>
+
+      <div class="card">
+        <h3>Report Results</h3>
+        <div id="report-results">Select report type and click Generate</div>
+      </div>
+    </div>
   </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
